@@ -16,10 +16,17 @@ function App() {
       const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId';
       const data = await fetchSheetData(sheetId);
       setDancers(data);
-      setConflicts(detectConflicts([], data)); // Placeholder showOrder
     };
     loadData();
   }, []);
+
+  // Re-run conflict detection when dancers or schedules change
+  useEffect(() => {
+    if (dancers.length > 0 && schedules.length > 0) {
+      const newConflicts = detectConflicts(schedules, dancers);
+      setConflicts(newConflicts);
+    }
+  }, [dancers, schedules]);
 
   const handleAddDancer = (newDancer) => {
     const dancer = { ...newDancer, id: Date.now() }; // Simple ID generation

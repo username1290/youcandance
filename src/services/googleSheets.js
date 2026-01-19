@@ -8,15 +8,33 @@ const RANGE = 'Sheet1!A:F'; // For dancers
 const SCHEDULE_RANGE = 'Sheet1!G:J'; // For schedules
 
 // Initialize gapi
-if (window.gapi) {
-  window.gapi.load('client:auth2', () => {
-    window.gapi.client.init({
-      apiKey: API_KEY,
-      clientId: CLIENT_ID,
-      discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-      scope: 'https://www.googleapis.com/auth/spreadsheets'
+const initGapi = () => {
+  if (window.gapi) {
+    window.gapi.load('client:auth2', async () => {
+      try {
+        await window.gapi.client.init({
+          apiKey: API_KEY,
+          clientId: CLIENT_ID,
+          discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+          scope: 'https://www.googleapis.com/auth/spreadsheets',
+          plugin_name: 'RecitalPlanner'
+        });
+        console.log('GAPI initialized');
+      } catch (error) {
+        console.error('Error initializing GAPI:', error);
+      }
     });
-  });
+  }
+};
+
+// Load GAPI script if not already loaded
+if (!window.gapi) {
+  const script = document.createElement('script');
+  script.src = 'https://apis.google.com/js/api.js';
+  script.onload = initGapi;
+  document.body.appendChild(script);
+} else {
+  initGapi();
 }
 
 export const authenticate = async () => {
@@ -36,15 +54,22 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
     }
     const data = await response.json();
     const rows = data.values.slice(1);
-    return rows.map(row => ({
-      id: parseInt(row[0]) || Date.now(),
-      name: row[1] || '',
-      girth: parseFloat(row[2]) || 0,
-      chest: parseFloat(row[3]) || 0,
-      waist: parseFloat(row[4]) || 0,
-      hips: parseFloat(row[5]) || 0,
-      role: row[6] || 'Dancer'
-    }));
+    const dancers = rows.map((row, index) => {
+      const sheetId = parseInt(row[0]);
+      // Use valid ID from sheet, or generate unique ID using index
+      const id = !isNaN(sheetId) ? sheetId : `dancer-${index}-${Date.now()}`;
+      return {
+        id,
+        name: row[1] || '',
+        girth: parseFloat(row[2]) || 0,
+        chest: parseFloat(row[3]) || 0,
+        waist: parseFloat(row[4]) || 0,
+        hips: parseFloat(row[5]) || 0,
+        role: row[6] || 'Dancer'
+      };
+    });
+    console.log('Loaded dancers with IDs:', dancers.map(d => ({ id: d.id, name: d.name })));
+    return dancers;
   } catch (error) {
     console.error('Error fetching sheet data:', error);
     return [

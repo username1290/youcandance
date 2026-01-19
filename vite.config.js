@@ -14,6 +14,11 @@ export default defineConfig({
     })
   ],
   server: {
-    host: '127.0.0.1'
+    host: '127.0.0.1',
+    port: 5174,
+    strictPort: true,
+    headers: {
+      'Content-Security-Policy': "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://accounts.google.com blob: data:;"
+    }
   }
 })
