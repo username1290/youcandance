@@ -7,6 +7,7 @@ import './App.css';
 function App() {
   const [dancers, setDancers] = useState([]);
   const [conflicts, setConflicts] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [theaterMode, setTheaterMode] = useState(false);
 
   useEffect(() => {
@@ -31,13 +32,17 @@ function App() {
     // In real app, update Google Sheets
   };
 
+  const handleAddSchedule = (newSchedule) => {
+    setSchedules([...schedules, newSchedule]);
+  };
+
   return (
     <div className={`App ${theaterMode ? 'theater-mode' : ''}`}>
       <button onClick={() => setTheaterMode(!theaterMode)} className="toggle-theater">
         {theaterMode ? 'Exit Theater Mode' : 'Enter Theater Mode'}
       </button>
       <h1>Recital Planner MVP</h1>
-      <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} />
+      <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} schedules={schedules} onAddSchedule={handleAddSchedule} />
     </div>
   );
 }
