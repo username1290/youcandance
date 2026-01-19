@@ -4,7 +4,7 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'YOUR_API_KEY_HERE';
 const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || 'YOUR_SHEET_ID_HERE';
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_HERE';
-const RANGE = 'Sheet1!A:F'; // For dancers
+const RANGE = 'Sheet1!A:J'; // For dancers - expanded to include more columns
 const SCHEDULE_RANGE = 'Sheet1!G:J'; // For schedules
 
 // Initialize gapi
@@ -65,7 +65,10 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
         chest: parseFloat(row[3]) || 0,
         waist: parseFloat(row[4]) || 0,
         hips: parseFloat(row[5]) || 0,
-        role: row[6] || 'Dancer'
+        role: row[6] || 'Dancer',
+        paidStatus: row[7] || 'Unpaid',
+        progressBySeamstress: row[8] || 'Not Started',
+        lastNotifiedDate: row[9] || ''
       };
     });
     console.log('Loaded dancers with IDs:', dancers.map(d => ({ id: d.id, name: d.name })));
@@ -73,8 +76,8 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
   } catch (error) {
     console.error('Error fetching sheet data:', error);
     return [
-      { id: 1, name: 'Dancer 1', girth: 80, chest: 85, waist: 70, hips: 90, role: 'Lead' },
-      { id: 2, name: 'Dancer 2', girth: 75, chest: 80, waist: 65, hips: 85, role: 'Ensemble' },
+      { id: 1, name: 'Dancer 1', girth: 80, chest: 85, waist: 70, hips: 90, role: 'Lead', paidStatus: 'Paid', progressBySeamstress: 'Completed', lastNotifiedDate: '2023-10-01' },
+      { id: 2, name: 'Dancer 2', girth: 75, chest: 80, waist: 65, hips: 85, role: 'Ensemble', paidStatus: 'Unpaid', progressBySeamstress: 'In Progress', lastNotifiedDate: '2023-09-15' },
     ];
   }
 };

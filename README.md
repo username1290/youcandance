@@ -21,13 +21,15 @@ A Vite React PWA for coordinating recital dancers, including measurement trackin
    - Create a Google Cloud Project at [Google Cloud Console](https://console.cloud.google.com/).
    - Enable the Google Sheets API.
    - Create an API key (for read operations on public sheets).
-   - Create a Google Sheet and make it public (File > Share > Anyone with the link can view).
-   - Format the sheet with columns: id, name, girth, chest, waist, hips, role.
+   - Create OAuth 2.0 credentials (Client ID) for write operations.
+   - Create a Google Sheet and share it with edit permissions for the service account or configure OAuth consent screen.
+   - Format the sheet with columns: id, name, girth, chest, waist, hips, role, paidStatus, progressBySeamstress, lastNotifiedDate.
 
 3. Create a `.env` file in the root directory:
    ```
    VITE_GOOGLE_API_KEY=your_api_key_here
    VITE_GOOGLE_SHEET_ID=your_sheet_id_here
+   VITE_GOOGLE_CLIENT_ID=your_client_id_here
    ```
 
 4. Run the development server:
