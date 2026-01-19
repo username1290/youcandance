@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import BackstageCheckIn from './components/BackstageCheckIn';
 import { detectConflicts } from './core/conflictEngine';
-import { fetchSheetData, saveSchedule } from './services/googleSheets';
+import { fetchSheetData, saveSchedule, updateDancerStatus, signOut } from './services/googleSheets';
 import './App.css';
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
     const loadData = async () => {
       const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId';
       const data = await fetchSheetData(sheetId);
-      setDancers(data.map(d => ({ ...d, checkInStatus: 'Not Ready' })));
+      setDancers(data);
     };
     loadData();
   }, []);
@@ -41,8 +41,19 @@ function App() {
     // In real app, update Google Sheets
   };
 
-  const handleUpdateCheckInStatus = (dancerId, status) => {
+  const handleUpdateCheckInStatus = async (dancerId, status) => {
+    // Optimistic update
     setDancers(dancers.map(d => d.id === dancerId ? { ...d, checkInStatus: status } : d));
+    
+    const dancer = dancers.find(d => d.id === dancerId);
+    if (dancer && dancer.rowIndex) {
+      try {
+        await updateDancerStatus(dancer.rowIndex, status);
+      } catch (error) {
+        console.error("Failed to sync status to Google Sheets", error);
+        alert("Failed to save status to Google Sheets. Please check your connection.");
+      }
+    }
   };
 
   const handleAddSchedule = async (newSchedule) => {
@@ -60,6 +71,7 @@ function App() {
       <div className="view-switcher">
         <button onClick={() => setCurrentView('dashboard')}>Dashboard</button>
         <button onClick={() => setCurrentView('checkin')}>Backstage Check-In</button>
+        <button onClick={signOut} className="sign-out-btn">Sign Out</button>
       </div>
       <h1>Recital Planner MVP</h1>
       {currentView === 'dashboard' ? (

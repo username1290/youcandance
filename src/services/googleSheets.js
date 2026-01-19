@@ -1,70 +1,143 @@
 // Google Sheets integration using Google Sheets API v4
-// For client-side, use fetch to API endpoint for read, gapi for write with OAuth
+// Using Google Identity Services (GIS) for authentication
 
-const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'YOUR_API_KEY_HERE';
-const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || 'YOUR_SHEET_ID_HERE';
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_HERE';
-const RANGE = 'Sheet1!A:K'; // For dancers - expanded to include more columns
-const SCHEDULE_RANGE = 'Sheet1!G:J'; // For schedules
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || '';
+const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || '';
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const RANGE = 'Sheet1!A:K';
 
-// Initialize gapi
-const initGapi = () => {
-  if (window.gapi) {
-    window.gapi.load('client:auth2', async () => {
-      try {
-        await window.gapi.client.init({
-          apiKey: API_KEY,
-          clientId: CLIENT_ID,
-          discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-          scope: 'https://www.googleapis.com/auth/spreadsheets',
-          plugin_name: 'RecitalPlanner'
-        });
-        console.log('GAPI initialized');
-      } catch (error) {
-        console.error('Error initializing GAPI:', error);
-      }
-    });
-  }
+let tokenClient = null;
+let accessToken = null;
+
+// Load the Google API client library
+const loadGapiClient = () => {
+  return new Promise((resolve, reject) => {
+    if (window.gapi && window.gapi.client) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://apis.google.com/js/api.js';
+    script.onload = () => {
+      window.gapi.load('client', async () => {
+        try {
+          await window.gapi.client.init({
+            apiKey: API_KEY,
+            discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+          });
+          console.log('GAPI client initialized');
+          resolve();
+        } catch (error) {
+          console.error('Error initializing GAPI client:', error);
+          reject(error);
+        }
+      });
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
 };
 
-// Load GAPI script if not already loaded
-if (!window.gapi) {
-  // Script loading is handled in index.html or via dynamic import if needed
-  // But for now, we rely on the script tag in index.html or the dynamic loader below if it fails
-  if (!document.querySelector('script[src="https://apis.google.com/js/api.js"]')) {
-      const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api.js';
-      script.onload = initGapi;
-      document.body.appendChild(script);
-  } else {
-      // If script tag exists, wait for it to load
-      window.addEventListener('load', initGapi);
-  }
-} else {
-  initGapi();
-}
+// Load Google Identity Services
+const loadGis = () => {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.accounts) {
+      initTokenClient();
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.onload = () => {
+      initTokenClient();
+      resolve();
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
 
-export const authenticate = async () => {
-  if (!window.gapi) return;
-  const auth = window.gapi.auth2.getAuthInstance();
-  if (!auth.isSignedIn.get()) {
-    await auth.signIn();
+const initTokenClient = () => {
+  tokenClient = window.google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    callback: (response) => {
+      if (response.error) {
+        console.error('Token error:', response);
+        return;
+      }
+      accessToken = response.access_token;
+      console.log('Access token obtained');
+    },
+  });
+  console.log('GIS initialized');
+};
+
+// Initialize both libraries
+let initPromise = null;
+const init = () => {
+  if (!initPromise) {
+    initPromise = Promise.all([loadGapiClient(), loadGis()]);
   }
-  return auth.currentUser.get().getAuthResponse().access_token;
+  return initPromise;
+};
+
+// Start initialization immediately
+init().catch(console.error);
+
+export const authenticate = () => {
+  return new Promise((resolve, reject) => {
+    if (accessToken) {
+      resolve(accessToken);
+      return;
+    }
+    if (!tokenClient) {
+      reject(new Error('Token client not initialized'));
+      return;
+    }
+    // Override callback for this specific request
+    tokenClient.callback = (response) => {
+      if (response.error) {
+        reject(response);
+        return;
+      }
+      accessToken = response.access_token;
+      resolve(accessToken);
+    };
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+};
+
+export const signOut = () => {
+  if (accessToken && window.google) {
+    window.google.accounts.oauth2.revoke(accessToken, () => {
+      console.log('Access token revoked');
+      accessToken = null;
+      window.location.reload();
+    });
+  } else {
+    accessToken = null;
+    window.location.reload();
+  }
 };
 
 export const fetchSheetData = async (sheetId = SHEET_ID) => {
   try {
-    const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RANGE}?key=${API_KEY}`);
+    await init();
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RANGE}?key=${API_KEY}`
+    );
     if (!response.ok) {
       throw new Error('Failed to fetch data from Google Sheets');
     }
     const data = await response.json();
+    if (!data.values || data.values.length === 0) {
+      return [];
+    }
     const rows = data.values.slice(1);
     const dancers = rows.map((row, index) => {
-      const sheetId = parseInt(row[0]);
-      // Use valid ID from sheet, or generate unique ID using index
-      const id = !isNaN(sheetId) ? sheetId : `dancer-${index}-${Date.now()}`;
+      const sheetIdVal = parseInt(row[0]);
+      const id = !isNaN(sheetIdVal) ? sheetIdVal : `dancer-${index}-${Date.now()}`;
       return {
         id,
         name: row[1] || '',
@@ -77,30 +150,79 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
         progressBySeamstress: row[8] || 'Not Started',
         lastNotifiedDate: row[9] || '',
         checkInStatus: row[10] || 'Not Ready',
-        rowIndex: index + 2 // Store 1-based row index (header is 1, data starts at 2)
+        rowIndex: index + 2,
       };
     });
-    console.log('Loaded dancers with IDs:', dancers.map(d => ({ id: d.id, name: d.name })));
+    console.log('Loaded dancers:', dancers.length);
     return dancers;
   } catch (error) {
     console.error('Error fetching sheet data:', error);
     return [
-      { id: 1, name: 'Dancer 1', girth: 80, chest: 85, waist: 70, hips: 90, role: 'Lead', paidStatus: 'Paid', progressBySeamstress: 'Completed', lastNotifiedDate: '2023-10-01' },
-      { id: 2, name: 'Dancer 2', girth: 75, chest: 80, waist: 65, hips: 85, role: 'Ensemble', paidStatus: 'Unpaid', progressBySeamstress: 'In Progress', lastNotifiedDate: '2023-09-15' },
+      { id: 1, name: 'Dancer 1', girth: 80, chest: 85, waist: 70, hips: 90, role: 'Lead', paidStatus: 'Paid', progressBySeamstress: 'Completed', lastNotifiedDate: '2023-10-01', checkInStatus: 'Not Ready', rowIndex: 2 },
+      { id: 2, name: 'Dancer 2', girth: 75, chest: 80, waist: 65, hips: 85, role: 'Ensemble', paidStatus: 'Unpaid', progressBySeamstress: 'In Progress', lastNotifiedDate: '2023-09-15', checkInStatus: 'Not Ready', rowIndex: 3 },
     ];
+  }
+};
+
+export const updateDancerStatus = async (rowIndex, status) => {
+  try {
+    await init();
+    const token = await authenticate();
+    
+    const range = `Sheet1!K${rowIndex}`;
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [[status]],
+        }),
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Update failed:', errorData);
+      throw new Error(errorData.error?.message || 'Failed to update status');
+    }
+    
+    const result = await response.json();
+    console.log(`Updated row ${rowIndex} status to ${status}`, result);
+    return result;
+  } catch (error) {
+    console.error('Error updating status:', error);
+    throw error;
   }
 };
 
 export const updateSheetData = async (sheetId, values) => {
   try {
-    await authenticate();
-    const response = await window.gapi.client.sheets.spreadsheets.values.append({
-      spreadsheetId: sheetId,
-      range: RANGE,
-      valueInputOption: 'RAW',
-      resource: { values: [values] }
-    });
-    console.log('Data appended:', response);
+    await init();
+    const token = await authenticate();
+    
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RANGE}:append?valueInputOption=RAW`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [values],
+        }),
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to append data');
+    }
+    
+    console.log('Data appended');
   } catch (error) {
     console.error('Error updating sheet:', error);
   }
