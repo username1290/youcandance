@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
+import BackstageCheckIn from './components/BackstageCheckIn';
 import { detectConflicts } from './core/conflictEngine';
 import { fetchSheetData, saveSchedule } from './services/googleSheets';
 import './App.css';
@@ -9,13 +10,14 @@ function App() {
   const [conflicts, setConflicts] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [theaterMode, setTheaterMode] = useState(false);
+  const [currentView, setCurrentView] = useState('dashboard');
 
   useEffect(() => {
     // Placeholder: Load data from Google Sheets
     const loadData = async () => {
       const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId';
       const data = await fetchSheetData(sheetId);
-      setDancers(data);
+      setDancers(data.map(d => ({ ...d, checkInStatus: 'Not Ready' })));
     };
     loadData();
   }, []);
@@ -39,6 +41,10 @@ function App() {
     // In real app, update Google Sheets
   };
 
+  const handleUpdateCheckInStatus = (dancerId, status) => {
+    setDancers(dancers.map(d => d.id === dancerId ? { ...d, checkInStatus: status } : d));
+  };
+
   const handleAddSchedule = async (newSchedule) => {
     setSchedules([...schedules, newSchedule]);
     // Save to Google Sheets
@@ -51,8 +57,16 @@ function App() {
       <button onClick={() => setTheaterMode(!theaterMode)} className="toggle-theater">
         {theaterMode ? 'Exit Theater Mode' : 'Enter Theater Mode'}
       </button>
+      <div className="view-switcher">
+        <button onClick={() => setCurrentView('dashboard')}>Dashboard</button>
+        <button onClick={() => setCurrentView('checkin')}>Backstage Check-In</button>
+      </div>
       <h1>Recital Planner MVP</h1>
-      <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} schedules={schedules} onAddSchedule={handleAddSchedule} />
+      {currentView === 'dashboard' ? (
+        <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} schedules={schedules} onAddSchedule={handleAddSchedule} />
+      ) : (
+        <BackstageCheckIn dancers={dancers} onUpdateStatus={handleUpdateCheckInStatus} theaterMode={theaterMode} />
+      )}
     </div>
   );
 }

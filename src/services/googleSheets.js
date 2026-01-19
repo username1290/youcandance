@@ -4,7 +4,7 @@
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'YOUR_API_KEY_HERE';
 const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || 'YOUR_SHEET_ID_HERE';
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'YOUR_CLIENT_ID_HERE';
-const RANGE = 'Sheet1!A:J'; // For dancers - expanded to include more columns
+const RANGE = 'Sheet1!A:K'; // For dancers - expanded to include more columns
 const SCHEDULE_RANGE = 'Sheet1!G:J'; // For schedules
 
 // Initialize gapi
@@ -29,10 +29,17 @@ const initGapi = () => {
 
 // Load GAPI script if not already loaded
 if (!window.gapi) {
-  const script = document.createElement('script');
-  script.src = 'https://apis.google.com/js/api.js';
-  script.onload = initGapi;
-  document.body.appendChild(script);
+  // Script loading is handled in index.html or via dynamic import if needed
+  // But for now, we rely on the script tag in index.html or the dynamic loader below if it fails
+  if (!document.querySelector('script[src="https://apis.google.com/js/api.js"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://apis.google.com/js/api.js';
+      script.onload = initGapi;
+      document.body.appendChild(script);
+  } else {
+      // If script tag exists, wait for it to load
+      window.addEventListener('load', initGapi);
+  }
 } else {
   initGapi();
 }
@@ -68,7 +75,9 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
         role: row[6] || 'Dancer',
         paidStatus: row[7] || 'Unpaid',
         progressBySeamstress: row[8] || 'Not Started',
-        lastNotifiedDate: row[9] || ''
+        lastNotifiedDate: row[9] || '',
+        checkInStatus: row[10] || 'Not Ready',
+        rowIndex: index + 2 // Store 1-based row index (header is 1, data starts at 2)
       };
     });
     console.log('Loaded dancers with IDs:', dancers.map(d => ({ id: d.id, name: d.name })));

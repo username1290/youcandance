@@ -63,6 +63,16 @@
   right: 10px;
 }
 
+.view-switcher {
+  margin-bottom: 20px;
+}
+
+.view-switcher button {
+  margin-right: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
 /* Conflict indicators */
 .conflict-red {
   color: #f00;
@@ -74,4 +84,82 @@
 
 .conflict-blue {
   color: #00f;
+}
+
+/* Backstage Check-In Styles */
+.backstage-checkin {
+  padding: 20px;
+}
+
+.backstage-checkin h2 {
+  margin-bottom: 20px;
+}
+
+.dancer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.dancer-card {
+  border: 2px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.dancer-card h3 {
+  margin-bottom: 10px;
+}
+
+.status-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.status-btn {
+  padding: 15px;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  min-height: 50px;
+}
+
+.status-btn.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.status-btn:not(.active) {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Theater Mode for Check-In */
+.theater-mode .backstage-checkin {
+  background-color: #000;
+  color: #fff;
+}
+
+.theater-mode .dancer-card {
+  border: 2px solid #fff;
+  background-color: #111;
+}
+
+.theater-mode .status-btn {
+  font-size: 20px;
+  min-height: 60px;
+}
+
+.theater-mode .status-btn.active {
+  background-color: #ff0;
+  color: #000;
+}
+
+.theater-mode .status-btn:not(.active) {
+  background-color: #333;
+  color: #fff;
 }
