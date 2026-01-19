@@ -4,7 +4,7 @@
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || 'YOUR_API_KEY_HERE'; // Set in .env
 const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || 'YOUR_SHEET_ID_HERE'; // Replace with actual sheet ID
-const RANGE = 'Sheet1!A1:E'; // Adjust range as needed
+const RANGE = 'Sheet1!A1:F'; // Adjust range as needed
 
 export const authenticate = async () => {
   // For client-side, OAuth is needed for write operations
