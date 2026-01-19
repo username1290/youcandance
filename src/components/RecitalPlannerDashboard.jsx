@@ -43,7 +43,7 @@ const RecitalPlannerDashboard = ({ dancers, conflicts, onAddDancer, onUpdateDanc
         </ul>
       </section>
       <MeasurementDashboard dancers={dancers} onUpdateDancer={onUpdateDancer} />
-      <ScheduleManager schedules={schedules} onAddSchedule={onAddSchedule} />
+      <ScheduleManager schedules={schedules} onAddSchedule={onAddSchedule} dancers={dancers} />
       <section>
         <h3>Conflicts</h3>
         <ul>
