@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import { detectConflicts } from './core/conflictEngine';
-import { fetchSheetData } from './services/googleSheets';
+import { fetchSheetData, saveSchedule } from './services/googleSheets';
 import './App.css';
 
 function App() {
@@ -32,8 +32,11 @@ function App() {
     // In real app, update Google Sheets
   };
 
-  const handleAddSchedule = (newSchedule) => {
+  const handleAddSchedule = async (newSchedule) => {
     setSchedules([...schedules, newSchedule]);
+    // Save to Google Sheets
+    const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID;
+    await saveSchedule(sheetId, newSchedule);
   };
 
   return (
