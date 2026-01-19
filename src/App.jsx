@@ -7,6 +7,7 @@ import './App.css';
 function App() {
   const [dancers, setDancers] = useState([]);
   const [conflicts, setConflicts] = useState([]);
+  const [theaterMode, setTheaterMode] = useState(false);
 
   useEffect(() => {
     // Placeholder: Load data from Google Sheets
@@ -31,7 +32,10 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className={`App ${theaterMode ? 'theater-mode' : ''}`}>
+      <button onClick={() => setTheaterMode(!theaterMode)} className="toggle-theater">
+        {theaterMode ? 'Exit Theater Mode' : 'Enter Theater Mode'}
+      </button>
       <h1>Recital Planner MVP</h1>
       <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} />
     </div>

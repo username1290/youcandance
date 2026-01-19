@@ -1,18 +1,31 @@
-/* Theater Mode: High contrast, accessible UI */
-body {
-  background-color: #000;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  margin: 0;
-  padding: 0;
-}
-
+/* Normal Mode */
 .App {
+  background-color: #fff;
+  color: #000;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  min-height: 100vh;
   padding: 20px;
 }
 
-.theater-mode {
+.App h1 {
+  color: #333;
+}
+
+/* Theater Mode */
+.App.theater-mode {
+  background-color: #000;
+  color: #fff;
+  font-size: 18px;
+}
+
+.App.theater-mode h1 {
+  color: #ff0;
+  font-size: 36px;
+  text-align: center;
+}
+
+.theater-mode .recital-planner-dashboard {
   background-color: #111;
   border: 2px solid #fff;
   padding: 20px;
@@ -20,28 +33,34 @@ body {
   border-radius: 8px;
 }
 
-.theater-mode h3 {
-  color: #ff0; /* Yellow for headings */
-  font-size: 24px;
+.theater-mode h2, .theater-mode h3 {
+  color: #ff0;
+  font-size: 28px;
 }
 
-.theater-mode p {
+.theater-mode p, .theater-mode li {
   font-size: 20px;
-  margin: 10px 0;
 }
 
-button {
+.theater-mode button {
   background-color: #fff;
   color: #000;
   border: none;
-  padding: 15px 30px; /* Min 44px touch target */
+  padding: 15px 30px;
   font-size: 18px;
   cursor: pointer;
   margin: 10px;
+  border-radius: 4px;
 }
 
-button:hover {
+.theater-mode button:hover {
   background-color: #ccc;
+}
+
+.toggle-theater {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 /* Conflict indicators */
