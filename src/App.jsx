@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import MeasurementDashboard from './components/MeasurementDashboard';
+import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import { detectConflicts } from './core/conflictEngine';
 import { fetchSheetData } from './services/googleSheets';
 import './App.css';
@@ -11,23 +11,29 @@ function App() {
   useEffect(() => {
     // Placeholder: Load data from Google Sheets
     const loadData = async () => {
-      const data = await fetchSheetData('sheetId'); // Replace with actual sheet ID
+      const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId';
+      const data = await fetchSheetData(sheetId);
       setDancers(data);
       setConflicts(detectConflicts([], data)); // Placeholder showOrder
     };
     loadData();
   }, []);
 
+  const handleAddDancer = (newDancer) => {
+    const dancer = { ...newDancer, id: Date.now() }; // Simple ID generation
+    setDancers([...dancers, dancer]);
+    // In real app, save to Google Sheets
+  };
+
+  const handleUpdateDancer = (updatedDancer) => {
+    setDancers(dancers.map(d => d.id === updatedDancer.id ? updatedDancer : d));
+    // In real app, update Google Sheets
+  };
+
   return (
     <div className="App">
       <h1>Recital Planner MVP</h1>
-      <MeasurementDashboard dancers={dancers} />
-      <div>
-        <h2>Conflicts</h2>
-        <ul>
-          {conflicts.map(conflict => <li key={conflict.id}>{conflict.name}</li>)}
-        </ul>
-      </div>
+      <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} />
     </div>
   );
 }

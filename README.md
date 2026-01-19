@@ -1,16 +1,49 @@
-# React + Vite
+# Recital Planner Coordination Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Vite React PWA for coordinating recital dancers, including measurement tracking and conflict resolution.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Dancer management with measurements
+- Conflict detection engine
+- Google Sheets integration for data storage
+- PWA support for offline use
+- Theater mode styling
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Clone the repository and install dependencies:
+   ```bash
+   npm install
+   ```
 
-## Expanding the ESLint configuration
+2. Set up Google Sheets API:
+   - Create a Google Cloud Project at [Google Cloud Console](https://console.cloud.google.com/).
+   - Enable the Google Sheets API.
+   - Create an API key (for read operations on public sheets).
+   - Create a Google Sheet and make it public (File > Share > Anyone with the link can view).
+   - Format the sheet with columns: id, name, girth, chest, waist, hips, role.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. Create a `.env` file in the root directory:
+   ```
+   VITE_GOOGLE_API_KEY=your_api_key_here
+   VITE_GOOGLE_SHEET_ID=your_sheet_id_here
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Project Structure
+
+- `src/components/` - React components
+- `src/services/` - External service integrations (Google Sheets)
+- `src/core/` - Business logic (conflict engine)
