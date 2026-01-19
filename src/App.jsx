@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import BackstageCheckIn from './components/BackstageCheckIn';
 import { detectConflicts } from './core/conflictEngine';
-import { fetchSheetData, saveSchedule, updateDancerStatus, signOut } from './services/googleSheets';
+import { fetchSheetData, saveSchedule, updateDancerStatus, updateDancerMeasurements, signOut } from './services/googleSheets';
 import './App.css';
 
 function App() {
@@ -36,9 +36,23 @@ function App() {
     // In real app, save to Google Sheets
   };
 
-  const handleUpdateDancer = (updatedDancer) => {
+  const handleUpdateDancer = async (updatedDancer) => {
+    // Optimistic update
     setDancers(dancers.map(d => d.id === updatedDancer.id ? updatedDancer : d));
-    // In real app, update Google Sheets
+    
+    if (updatedDancer.rowIndex) {
+      try {
+        await updateDancerMeasurements(updatedDancer.rowIndex, {
+          girth: updatedDancer.girth,
+          chest: updatedDancer.chest,
+          waist: updatedDancer.waist,
+          hips: updatedDancer.hips,
+        });
+      } catch (error) {
+        console.error("Failed to sync measurements to Google Sheets", error);
+        alert("Failed to save measurements to Google Sheets. Please check your connection.");
+      }
+    }
   };
 
   const handleUpdateCheckInStatus = async (dancerId, status) => {

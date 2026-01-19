@@ -175,3 +175,108 @@
   background-color: #333;
   color: #fff;
 }
+
+/* QR Scanner Styles */
+.qr-scan-controls {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.qr-scan-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qr-scan-btn:hover {
+  background-color: #45a049;
+}
+
+.scan-success {
+  color: #4CAF50;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #e8f5e9;
+  border-radius: 5px;
+  max-width: 400px;
+}
+
+.scan-error {
+  color: #f44336;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 5px;
+  max-width: 400px;
+}
+
+.theater-mode .scan-success {
+  color: #0f0;
+  background-color: #111;
+}
+
+.theater-mode .scan-error {
+  color: #f00;
+  background-color: #111;
+}
+
+.qr-scanner-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.qr-scanner-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 500px;
+  position: relative;
+}
+
+.theater-mode .qr-scanner-container {
+  background-color: #222;
+  color: white;
+}
+
+.close-scanner-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.close-scanner-btn:hover {
+  background-color: #d32f2f;
+}
+
+.theater-mode .close-scanner-btn {
+  background-color: #f00;
+}
+
+.theater-mode .close-scanner-btn:hover {
+  background-color: #c00;
+}

@@ -199,6 +199,42 @@ export const updateDancerStatus = async (rowIndex, status) => {
   }
 };
 
+export const updateDancerMeasurements = async (rowIndex, measurements) => {
+  try {
+    await init();
+    const token = await authenticate();
+    
+    // Update columns C through F (girth, chest, waist, hips)
+    const range = `Sheet1!C${rowIndex}:F${rowIndex}`;
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [[measurements.girth, measurements.chest, measurements.waist, measurements.hips]],
+        }),
+      }
+    );
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Update failed:', errorData);
+      throw new Error(errorData.error?.message || 'Failed to update measurements');
+    }
+    
+    const result = await response.json();
+    console.log(`Updated row ${rowIndex} measurements`, result);
+    return result;
+  } catch (error) {
+    console.error('Error updating measurements:', error);
+    throw error;
+  }
+};
+
 export const updateSheetData = async (sheetId, values) => {
   try {
     await init();
