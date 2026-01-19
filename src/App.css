@@ -73,6 +73,23 @@
   font-size: 16px;
 }
 
+.qr-generate-btn {
+  background-color: #673AB7;
+  color: white;
+}
+
+.qr-generate-btn:hover {
+  background-color: #5e35b1;
+}
+
+.theater-mode .qr-generate-btn {
+  background-color: #9c27b0;
+}
+
+.theater-mode .qr-generate-btn:hover {
+  background-color: #7b1fa2;
+}
+
 .sign-out-btn {
   background-color: #ff4444;
   color: white;
@@ -279,4 +296,220 @@
 
 .theater-mode .close-scanner-btn:hover {
   background-color: #c00;
+}
+
+/* QR Code Generator Styles */
+.qr-generator-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+  overflow-y: auto;
+}
+
+.qr-generator-container {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.theater-mode .qr-generator-container {
+  background-color: #222;
+  color: white;
+}
+
+.qr-generator-container h2 {
+  margin-bottom: 25px;
+  text-align: center;
+  color: #333;
+}
+
+.theater-mode .qr-generator-container h2 {
+  color: #ff0;
+}
+
+.qr-controls {
+  margin-bottom: 25px;
+}
+
+.dancer-selector {
+  margin-bottom: 20px;
+}
+
+.dancer-selector label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.dancer-selector select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: white;
+}
+
+.theater-mode .dancer-selector select {
+  background-color: #333;
+  color: white;
+  border-color: #555;
+}
+
+.qr-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.size-control {
+  display: flex;
+  flex-direction: column;
+}
+
+.size-control label {
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.size-control input[type="range"] {
+  width: 100%;
+}
+
+.logo-option {
+  display: flex;
+  align-items: center;
+}
+
+.logo-option label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.qr-actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.download-btn, .download-all-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.download-btn {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+}
+
+.download-all-btn {
+  background-color: #2196F3;
+  color: white;
+}
+
+.download-all-btn:hover {
+  background-color: #0b7dda;
+}
+
+.qr-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin: 25px 0;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.theater-mode .qr-preview {
+  background-color: #111;
+}
+
+.qr-code-container {
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.theater-mode .qr-code-container {
+  background-color: #333;
+}
+
+.dancer-info {
+  text-align: center;
+}
+
+.dancer-info h3 {
+  margin-bottom: 8px;
+  font-size: 20px;
+}
+
+.dancer-info p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.theater-mode .dancer-info p {
+  color: #ccc;
+}
+
+.close-qr-generator {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 15px;
+}
+
+.close-qr-generator:hover {
+  background-color: #d32f2f;
+}
+
+.theater-mode .close-qr-generator {
+  background-color: #f00;
+}
+
+.theater-mode .close-qr-generator:hover {
+  background-color: #c00;
+}
+
+@media (max-width: 768px) {
+  .qr-options {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-actions {
+    flex-direction: column;
+  }
 }

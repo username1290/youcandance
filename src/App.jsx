@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import BackstageCheckIn from './components/BackstageCheckIn';
+import QRCodeGenerator from './components/QRCodeGenerator';
 import { detectConflicts } from './core/conflictEngine';
 import { fetchSheetData, saveSchedule, updateDancerStatus, updateDancerMeasurements, signOut } from './services/googleSheets';
 import './App.css';
@@ -11,6 +12,7 @@ function App() {
   const [schedules, setSchedules] = useState([]);
   const [theaterMode, setTheaterMode] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
+  const [showQRGenerator, setShowQRGenerator] = useState(false);
 
   useEffect(() => {
     // Placeholder: Load data from Google Sheets
@@ -85,6 +87,7 @@ function App() {
       <div className="view-switcher">
         <button onClick={() => setCurrentView('dashboard')}>Dashboard</button>
         <button onClick={() => setCurrentView('checkin')}>Backstage Check-In</button>
+        <button onClick={() => setShowQRGenerator(true)} className="qr-generate-btn">Generate QR Codes</button>
         <button onClick={signOut} className="sign-out-btn">Sign Out</button>
       </div>
       <h1>Recital Planner MVP</h1>
@@ -92,6 +95,13 @@ function App() {
         <RecitalPlannerDashboard dancers={dancers} conflicts={conflicts} onAddDancer={handleAddDancer} onUpdateDancer={handleUpdateDancer} schedules={schedules} onAddSchedule={handleAddSchedule} />
       ) : (
         <BackstageCheckIn dancers={dancers} onUpdateStatus={handleUpdateCheckInStatus} theaterMode={theaterMode} />
+      )}
+      
+      {showQRGenerator && (
+        <QRCodeGenerator 
+          dancers={dancers} 
+          onClose={() => setShowQRGenerator(false)}
+        />
       )}
     </div>
   );
