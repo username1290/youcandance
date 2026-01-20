@@ -11,57 +11,44 @@ const RecitalPlannerDashboard = ({
   schedules,
   onAddSchedule,
   loading = false,
+  recitals = [],
+  currentRecitalId,
+  onRecitalChange,
 }) => {
   const [newDancer, setNewDancer] = useState({ name: '', role: '' })
-  const [selectedRecital, setSelectedRecital] = useState('recital-1')
+
+  // Use prop if available, otherwise default to 'recital-1' (for backward compatibility or if not passed)
+  const activeRecitalId = currentRecitalId || 'recital-1'
+
+  // Helper to get dancer count for a recital
+  const getDancerCount = (recitalId) => {
+    return dancers.filter(
+      (dancer) => dancer.recitalId === recitalId || (!dancer.recitalId && recitalId === 'recital-1')
+    ).length
+  }
 
   // Filter data by selected recital
-  const recital1Dancers = dancers.filter(
-    (dancer) => dancer.recitalId === 'recital-1' || !dancer.recitalId
+  const currentDancers = dancers.filter(
+    (dancer) =>
+      dancer.recitalId === activeRecitalId || (!dancer.recitalId && activeRecitalId === 'recital-1')
   )
-  const recital2Dancers = dancers.filter((dancer) => dancer.recitalId === 'recital-2')
-  const currentDancers = selectedRecital === 'recital-1' ? recital1Dancers : recital2Dancers
 
-  const recital1Schedules = schedules.filter(
-    (schedule) => schedule.recitalId === 'recital-1' || !schedule.recitalId
+  // Schedules are already filtered by App.jsx fetching, but we filter again just in case mixed data is passed
+  const currentSchedules = schedules.filter(
+    (schedule) =>
+      schedule.recitalId === activeRecitalId ||
+      (!schedule.recitalId && activeRecitalId === 'recital-1')
   )
-  const recital2Schedules = schedules.filter((schedule) => schedule.recitalId === 'recital-2')
-  const currentSchedules = selectedRecital === 'recital-1' ? recital1Schedules : recital2Schedules
 
-  const recital1Conflicts = conflicts.filter((conflict) =>
+  const currentConflicts = conflicts.filter((conflict) =>
     currentDancers.some((dancer) => dancer.id === conflict.dancerId)
   )
-  const recital2Conflicts = conflicts.filter((conflict) =>
-    currentDancers.some((dancer) => dancer.id === conflict.dancerId)
-  )
-  const currentConflicts = selectedRecital === 'recital-1' ? recital1Conflicts : recital2Conflicts
 
   if (loading) {
     return (
       <div className="dashboard-loading">
         <LoadingSkeleton type="text" width="30%" height="32px" count={1} gap="20px" />
-
-        <div className="skeleton-grid">
-          <div className="skeleton-card">
-            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
-            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
-            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
-          </div>
-
-          <div className="skeleton-card">
-            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
-            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
-            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
-          </div>
-
-          <div className="skeleton-card">
-            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
-            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
-            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
-          </div>
-        </div>
-
-        <LoadingSkeleton type="rect" width="100%" height="200px" count={1} gap="20px" />
+        // ...existing code...
       </div>
     )
   }
@@ -74,25 +61,32 @@ const RecitalPlannerDashboard = ({
     }
   }
 
+  // Default recitals if none provided
+  const displayRecitals =
+    recitals.length > 0
+      ? recitals
+      : [
+          { id: 'recital-1', name: 'Recital 1' },
+          { id: 'recital-2', name: 'Recital 2' },
+        ]
+
   return (
     <div className="recital-planner-dashboard">
       <h2>Recital Planner Dashboard</h2>
       <div className="recital-tabs-global">
-        <button
-          className={`recital-tab-global ${selectedRecital === 'recital-1' ? 'active' : ''}`}
-          onClick={() => setSelectedRecital('recital-1')}
-        >
-          Recital 1 ({recital1Dancers.length} dancers)
-        </button>
-        <button
-          className={`recital-tab-global ${selectedRecital === 'recital-2' ? 'active' : ''}`}
-          onClick={() => setSelectedRecital('recital-2')}
-        >
-          Recital 2 ({recital2Dancers.length} dancers)
-        </button>
+        {displayRecitals.map((recital) => (
+          <button
+            key={recital.id}
+            className={`recital-tab-global ${activeRecitalId === recital.id ? 'active' : ''}`}
+            onClick={() => (onRecitalChange ? onRecitalChange(recital.id) : null)}
+          >
+            {recital.name} <span className="count-badge">{getDancerCount(recital.id)}</span>
+          </button>
+        ))}
       </div>
       <section>
         <h3>Add Dancer</h3>
+
         <form onSubmit={handleSubmit}>
           <input
             type="text"
