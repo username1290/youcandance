@@ -1,58 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
-  const [editing, setEditing] = useState(null);
-  const [editData, setEditData] = useState({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-  const [expandedDancer, setExpandedDancer] = useState(null);
+  const [editing, setEditing] = useState(null)
+  const [editData, setEditData] = useState({})
+  const [searchTerm, setSearchTerm] = useState('')
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
+  const [expandedDancer, setExpandedDancer] = useState(null)
+  const [activeRecital, setActiveRecital] = useState('recital-1')
 
   const handleEdit = (dancer) => {
-    setEditing(dancer.id);
-    setEditData({ ...dancer });
-    setExpandedDancer(dancer.id);
-  };
+    setEditing(dancer.id)
+    setEditData({ ...dancer })
+    setExpandedDancer(dancer.id)
+  }
 
   const handleSave = () => {
-    onUpdateDancer(editData);
-    setEditing(null);
-  };
+    onUpdateDancer(editData)
+    setEditing(null)
+  }
 
   const handleChange = (field, value) => {
-    setEditData({ ...editData, [field]: value });
-  };
+    setEditData({ ...editData, [field]: value })
+  }
 
   const handleSort = (key) => {
-    let direction = 'asc';
+    let direction = 'asc'
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+      direction = 'desc'
     }
-    setSortConfig({ key, direction });
-  };
+    setSortConfig({ key, direction })
+  }
 
   const toggleExpand = (dancerId) => {
-    setExpandedDancer(expandedDancer === dancerId ? null : dancerId);
-  };
+    setExpandedDancer(expandedDancer === dancerId ? null : dancerId)
+  }
 
-  const filteredDancers = dancers.filter(dancer =>
-    dancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (dancer.class && dancer.class.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredDancers = dancers.filter(
+    (dancer) =>
+      dancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (dancer.class && dancer.class.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
 
-  const sortedDancers = [...filteredDancers].sort((a, b) => {
-    if (!sortConfig.key) return 0;
-    
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-    
+  const recital1Dancers = filteredDancers.filter((dancer) => dancer.recitalId === 'recital-1')
+  const recital2Dancers = filteredDancers.filter((dancer) => dancer.recitalId === 'recital-2')
+  const currentDancers = activeRecital === 'recital-1' ? recital1Dancers : recital2Dancers
+
+  const sortedDancers = [...currentDancers].sort((a, b) => {
+    if (!sortConfig.key) return 0
+
+    const aValue = a[sortConfig.key]
+    const bValue = b[sortConfig.key]
+
     if (aValue < bValue) {
-      return sortConfig.direction === 'asc' ? -1 : 1;
+      return sortConfig.direction === 'asc' ? -1 : 1
     }
     if (aValue > bValue) {
-      return sortConfig.direction === 'asc' ? 1 : -1;
+      return sortConfig.direction === 'asc' ? 1 : -1
     }
-    return 0;
-  });
+    return 0
+  })
 
   return (
     <div className="measurement-dashboard">
@@ -67,9 +73,23 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
             className="search-input"
           />
           <span className="dancer-count">
-            {filteredDancers.length} of {dancers.length} dancers
+            {currentDancers.length} of {filteredDancers.length} dancers
           </span>
         </div>
+      </div>
+      <div className="recital-tabs">
+        <button
+          className={`recital-tab ${activeRecital === 'recital-1' ? 'active' : ''}`}
+          onClick={() => setActiveRecital('recital-1')}
+        >
+          Recital 1 ({recital1Dancers.length})
+        </button>
+        <button
+          className={`recital-tab ${activeRecital === 'recital-2' ? 'active' : ''}`}
+          onClick={() => setActiveRecital('recital-2')}
+        >
+          Recital 2 ({recital2Dancers.length})
+        </button>
       </div>
 
       <div className="measurements-table">
@@ -87,8 +107,11 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
         {sortedDancers.length === 0 ? (
           <div className="no-results">No dancers found matching your search.</div>
         ) : (
-          sortedDancers.map(dancer => (
-            <div key={dancer.id} className={`dancer-row ${expandedDancer === dancer.id ? 'expanded' : ''}`}>
+          sortedDancers.map((dancer) => (
+            <div
+              key={dancer.id}
+              className={`dancer-row ${expandedDancer === dancer.id ? 'expanded' : ''}`}
+            >
               <div className="dancer-cell name" onClick={() => toggleExpand(dancer.id)}>
                 <span className="dancer-name">{dancer.name}</span>
                 {dancer.class && <span className="dancer-class">{dancer.class}</span>}
@@ -99,36 +122,36 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
                   <div className="edit-measurements">
                     <div className="measurement-input">
                       <label>G:</label>
-                      <input 
-                        type="number" 
-                        value={editData.girth || ''} 
+                      <input
+                        type="number"
+                        value={editData.girth || ''}
                         onChange={(e) => handleChange('girth', parseFloat(e.target.value) || 0)}
                         className="compact-input"
                       />
                     </div>
                     <div className="measurement-input">
                       <label>C:</label>
-                      <input 
-                        type="number" 
-                        value={editData.chest || ''} 
+                      <input
+                        type="number"
+                        value={editData.chest || ''}
                         onChange={(e) => handleChange('chest', parseFloat(e.target.value) || 0)}
                         className="compact-input"
                       />
                     </div>
                     <div className="measurement-input">
                       <label>W:</label>
-                      <input 
-                        type="number" 
-                        value={editData.waist || ''} 
+                      <input
+                        type="number"
+                        value={editData.waist || ''}
                         onChange={(e) => handleChange('waist', parseFloat(e.target.value) || 0)}
                         className="compact-input"
                       />
                     </div>
                     <div className="measurement-input">
                       <label>H:</label>
-                      <input 
-                        type="number" 
-                        value={editData.hips || ''} 
+                      <input
+                        type="number"
+                        value={editData.hips || ''}
                         onChange={(e) => handleChange('hips', parseFloat(e.target.value) || 0)}
                         className="compact-input"
                       />
@@ -146,11 +169,17 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
               <div className="dancer-cell actions">
                 {editing === dancer.id ? (
                   <>
-                    <button onClick={handleSave} className="save-btn">✓</button>
-                    <button onClick={() => setEditing(null)} className="cancel-btn">✕</button>
+                    <button onClick={handleSave} className="save-btn">
+                      ✓
+                    </button>
+                    <button onClick={() => setEditing(null)} className="cancel-btn">
+                      ✕
+                    </button>
                   </>
                 ) : (
-                  <button onClick={() => handleEdit(dancer)} className="edit-btn">✏️</button>
+                  <button onClick={() => handleEdit(dancer)} className="edit-btn">
+                    ✏️
+                  </button>
                 )}
               </div>
             </div>
@@ -158,7 +187,7 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MeasurementDashboard;
+export default MeasurementDashboard

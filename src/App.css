@@ -33,7 +33,7 @@
   width: 60px;
   height: 60px;
   border: 6px solid #f3f3f3;
-  border-top: 6px solid #4CAF50;
+  border-top: 6px solid #4caf50;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 20px;
@@ -55,8 +55,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error State */
@@ -93,7 +97,7 @@
 
 .retry-button {
   padding: 12px 30px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 6px;
@@ -140,12 +144,14 @@
   border-radius: 8px;
 }
 
-.theater-mode h2, .theater-mode h3 {
+.theater-mode h2,
+.theater-mode h3 {
   color: #ff0;
   font-size: 28px;
 }
 
-.theater-mode p, .theater-mode li {
+.theater-mode p,
+.theater-mode li {
   font-size: 20px;
 }
 
@@ -181,7 +187,7 @@
 }
 
 .qr-generate-btn {
-  background-color: #673AB7;
+  background-color: #673ab7;
   color: white;
 }
 
@@ -265,7 +271,7 @@
 }
 
 .status-btn.active {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
@@ -310,7 +316,7 @@
 }
 
 .qr-scan-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -327,7 +333,7 @@
 }
 
 .scan-success {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
   padding: 10px;
   background-color: #e8f5e9;
@@ -491,7 +497,7 @@
   font-weight: bold;
 }
 
-.size-control input[type="range"] {
+.size-control input[type='range'] {
   width: 100%;
 }
 
@@ -514,7 +520,8 @@
   margin-top: 15px;
 }
 
-.download-btn, .download-all-btn {
+.download-btn,
+.download-all-btn {
   flex: 1;
   padding: 12px;
   border: none;
@@ -525,7 +532,7 @@
 }
 
 .download-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
@@ -534,7 +541,7 @@
 }
 
 .download-all-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
@@ -660,7 +667,7 @@
 
 .add-schedule-form button {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 5px;
@@ -685,7 +692,9 @@
   }
 }
 
-.dancers-panel, .schedule-timeline, .conflicts-panel {
+.dancers-panel,
+.schedule-timeline,
+.conflicts-panel {
   background-color: white;
   padding: 15px;
   border-radius: 8px;
@@ -731,11 +740,12 @@
 
 .dancer-search:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
-.role-filter, .sort-select {
+.role-filter,
+.sort-select {
   padding: 8px 12px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
@@ -745,9 +755,10 @@
   transition: all 0.3s;
 }
 
-.role-filter:focus, .sort-select:focus {
+.role-filter:focus,
+.sort-select:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
@@ -792,7 +803,7 @@
 }
 
 .clear-filters-btn {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -804,7 +815,7 @@
 }
 
 .clear-filters-btn:hover {
-  background: #388E3C;
+  background: #388e3c;
 }
 
 /* Recital Switcher Styles */
@@ -833,12 +844,12 @@
 
 .recital-select:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
 .add-recital-btn {
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -853,7 +864,7 @@
 }
 
 .add-recital-btn:hover {
-  background: #388E3C;
+  background: #388e3c;
   transform: translateY(-1px);
 }
 
@@ -920,13 +931,13 @@
 }
 
 .draggable-dancer:hover {
-  border-color: #4CAF50;
+  border-color: #4caf50;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .draggable-dancer.dragging {
-  border: 2px dashed #4CAF50;
+  border: 2px dashed #4caf50;
 }
 
 .draggable-dancer.assigned {
@@ -1014,7 +1025,7 @@
 }
 
 .schedule-slot.over {
-  border: 2px dashed #4CAF50;
+  border: 2px dashed #4caf50;
   background-color: #e8f5e9;
 }
 
@@ -1024,7 +1035,7 @@
 }
 
 .schedule-slot.can-drop {
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .schedule-header {
@@ -1246,11 +1257,15 @@
 
 /* Drag and drop animation */
 .draggable-schedule-container {
-  transition: transform 0.2s, opacity 0.2s;
+  transition:
+    transform 0.2s,
+    opacity 0.2s;
 }
 
 /* Component Loading States */
-.dashboard-loading, .checkin-loading, .schedule-loading {
+.dashboard-loading,
+.checkin-loading,
+.schedule-loading {
   width: 100%;
 }
 
@@ -1273,7 +1288,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.skeleton-table-header, .skeleton-table-row {
+.skeleton-table-header,
+.skeleton-table-row {
   display: flex;
   gap: 10px;
   padding: 10px 0;
@@ -1389,6 +1405,35 @@
   overflow: hidden;
 }
 
+.recital-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.recital-tab {
+  padding: 10px 20px;
+  background: #f8f9fa;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #495057;
+  transition: all 0.3s;
+}
+
+.recital-tab:hover {
+  background: #e9ecef;
+}
+
+.recital-tab.active {
+  background: #4caf50;
+  color: white;
+  border-bottom: 3px solid #2e7d32;
+}
+
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -1424,7 +1469,7 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
@@ -1528,7 +1573,7 @@
 
 .measurement-input label {
   font-weight: 600;
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .compact-input {
@@ -1542,8 +1587,8 @@
 
 .compact-input:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 0 1px #4CAF50;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 1px #4caf50;
 }
 
 .actions {
@@ -1551,7 +1596,9 @@
   justify-content: center;
 }
 
-.edit-btn, .save-btn, .cancel-btn {
+.edit-btn,
+.save-btn,
+.cancel-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -1562,7 +1609,7 @@
 }
 
 .edit-btn {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .edit-btn:hover {
@@ -1571,12 +1618,12 @@
 
 .save-btn {
   color: white;
-  background: #4CAF50;
+  background: #4caf50;
   margin-right: 5px;
 }
 
 .save-btn:hover {
-  background: #388E3C;
+  background: #388e3c;
 }
 
 .cancel-btn {
@@ -1597,26 +1644,31 @@
 
 /* Compact mode for many dancers */
 @media (max-width: 1024px) {
-  .table-header, .dancer-row {
+  .table-header,
+  .dancer-row {
     grid-template-columns: 1.5fr 1fr 1.5fr 0.5fr;
   }
 }
 
 @media (max-width: 768px) {
-  .table-header, .dancer-row {
+  .table-header,
+  .dancer-row {
     grid-template-columns: 1fr;
   }
 
-  .header-cell, .dancer-cell {
+  .header-cell,
+  .dancer-cell {
     padding: 8px 0;
     border-bottom: 1px solid #eee;
   }
 
-  .header-cell:last-child, .dancer-cell:last-child {
+  .header-cell:last-child,
+  .dancer-cell:last-child {
     border-bottom: none;
   }
 
-  .measurement-display, .edit-measurements {
+  .measurement-display,
+  .edit-measurements {
     flex-direction: column;
     gap: 8px;
   }
