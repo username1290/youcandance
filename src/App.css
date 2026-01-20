@@ -807,13 +807,87 @@
   background: #388E3C;
 }
 
+/* Recital Switcher Styles */
+.recital-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.recital-select {
+  flex: 1;
+  min-width: 300px;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.recital-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.add-recital-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.add-recital-btn:hover {
+  background: #388E3C;
+  transform: translateY(-1px);
+}
+
+.add-recital-btn:active {
+  transform: translateY(0);
+}
+
+.no-recitals {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #666;
+  font-style: italic;
+}
+
+.no-recitals p {
+  margin: 0;
+}
+
 /* Theater mode adjustments for new elements */
-.theater-mode .dancer-search,
+.theater-mode .recital-switcher {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.theater-mode .recital-select,
 .theater-mode .role-filter,
 .theater-mode .sort-select {
   background: rgba(255, 255, 255, 0.1);
   color: white;
   border-color: rgba(255, 255, 255, 0.3);
+}
+
+.theater-mode .no-recitals {
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .theater-mode .search-badge {

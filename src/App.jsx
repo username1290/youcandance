@@ -12,6 +12,11 @@ import {
   saveRecitalEvent,
   updateRecitalEvent,
   deleteRecitalEvent,
+  fetchAllRecitals,
+  createRecital,
+  createRecitalEventsSheet,
+  // updateRecital,
+  // duplicateRecital,
   signOut,
 } from './services/googleSheets'
 import './App.css'
@@ -20,6 +25,8 @@ function App() {
   const [dancers, setDancers] = useState([])
   const [conflicts, setConflicts] = useState([])
   const [schedules, setSchedules] = useState([])
+  const [recitals, setRecitals] = useState([])
+  const [currentRecitalId, setCurrentRecitalId] = useState(null)
   const [theaterMode, setTheaterMode] = useState(false)
   const [currentView, setCurrentView] = useState('dashboard')
   const [showQRGenerator, setShowQRGenerator] = useState(false)
@@ -38,13 +45,49 @@ function App() {
 
         const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId'
 
-        // Load dancers from Sheet1
-        const data = await fetchSheetData(sheetId)
-        setDancers(data)
+        // Load recitals metadata first
+        const recitalsData = await fetchAllRecitals(sheetId)
+        setRecitals(recitalsData)
 
-        // Load recital events from Sheet2
-        const eventsData = await fetchRecitalEvents(sheetId)
-        setSchedules(eventsData)
+        // Set first active recital as default, or first recital if none active
+        if (recitalsData.length > 0) {
+          const firstActive = recitalsData.find((r) => r.active) || recitalsData[0]
+          setCurrentRecitalId(firstActive.id)
+        } else {
+          // If no recitals exist, create a default one
+          console.warn('No recitals found in Sheet4. Creating default recital...')
+          const defaultRecital = {
+            id: 'recital-1',
+            name: 'Spring Showcase 2024',
+            date: new Date().toISOString().split('T')[0],
+            location: 'Main Theater',
+            school: 'Dance Studio',
+            theme: 'Under the Sea',
+            active: true,
+          }
+          
+          try {
+            await createRecital(sheetId, defaultRecital)
+            await createRecitalEventsSheet(sheetId, 'recital-1')
+            setRecitals([defaultRecital])
+            setCurrentRecitalId('recital-1')
+          } catch (error) {
+            console.error('Failed to create default recital:', error)
+            // Fallback to using default data without saving to Google Sheets
+            setRecitals([defaultRecital])
+            setCurrentRecitalId('recital-1')
+          }
+        }
+
+        // Load dancers from Sheet1
+        const dancersData = await fetchSheetData(sheetId)
+        setDancers(dancersData)
+
+        // Load recital events for the current recital
+        if (currentRecitalId) {
+          const eventsData = await fetchRecitalEvents(sheetId, currentRecitalId)
+          setSchedules(eventsData)
+        }
       } catch (err) {
         console.error('Failed to load data:', err)
         setError('Failed to load data. Please check your connection and try again.')
@@ -62,7 +105,28 @@ function App() {
       const newConflicts = detectConflicts(schedules, dancers)
       setConflicts(newConflicts)
     }
-  }, [dancers, schedules])
+  }, [dancers, schedules, currentRecitalId])
+
+  // Reload schedules when current recital changes
+  useEffect(() => {
+    if (currentRecitalId) {
+      const loadRecitalSchedules = async () => {
+        try {
+          const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
+          const eventsData = await fetchRecitalEvents(sheetId, currentRecitalId)
+          setSchedules(eventsData)
+        } catch (error) {
+          console.error('Failed to load recital schedules:', error)
+          if (error.message.includes('400')) {
+            alert('Recital events sheet not found. It will be created when you add your first event.')
+          } else {
+            alert('Failed to load schedules for this recital. Please check your connection.')
+          }
+        }
+      }
+      loadRecitalSchedules()
+    }
+  }, [currentRecitalId])
 
   const handleAddDancer = (newDancer) => {
     const dancer = { ...newDancer, id: Date.now() } // Simple ID generation
@@ -110,7 +174,7 @@ function App() {
 
     try {
       const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
-      await saveRecitalEvent(sheetId, newSchedule)
+      await saveRecitalEvent(sheetId, newSchedule, currentRecitalId)
     } catch (error) {
       console.error('Failed to sync recital event to Google Sheets', error)
       alert('Failed to save recital event to Google Sheets. Please check your connection.')
@@ -126,7 +190,7 @@ function App() {
     if (updatedSchedule.rowIndex) {
       try {
         const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
-        await updateRecitalEvent(sheetId, updatedSchedule.rowIndex, updatedSchedule)
+        await updateRecitalEvent(sheetId, updatedSchedule.rowIndex, updatedSchedule, currentRecitalId)
       } catch (error) {
         console.error('Failed to sync recital event update to Google Sheets', error)
         alert('Failed to update recital event in Google Sheets. Please check your connection.')
@@ -145,7 +209,7 @@ function App() {
 
     try {
       const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
-      await deleteRecitalEvent(sheetId, schedule.rowIndex)
+      await deleteRecitalEvent(sheetId, schedule.rowIndex, currentRecitalId)
     } catch (error) {
       console.error('Failed to delete recital event from Google Sheets', error)
       alert('Failed to delete recital event from Google Sheets. Please check your connection.')
@@ -185,6 +249,107 @@ function App() {
       <button onClick={() => setTheaterMode(!theaterMode)} className="toggle-theater">
         {theaterMode ? 'Exit Theater Mode' : 'Enter Theater Mode'}
       </button>
+
+      <div className="recital-switcher">
+        {recitals.length > 0 ? (
+          <>
+            <select
+              value={currentRecitalId || ''}
+              onChange={(e) => setCurrentRecitalId(e.target.value)}
+              className="recital-select"
+            >
+              {recitals.map((recital) => (
+                <option key={recital.id} value={recital.id}>
+                  {recital.name} ({recital.date}) at {recital.location}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={async () => {
+                const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
+                const newRecitalId = `recital-${recitals.length + 1}`
+                const newRecital = {
+                  id: newRecitalId,
+                  name: `New Recital ${recitals.length + 1}`,
+                  date: new Date().toISOString().split('T')[0],
+                  location: '',
+                  school: '',
+                  theme: '',
+                  active: true,
+                }
+                
+                try {
+                  setLoading(true)
+                  
+                  // Create recital metadata
+                  await createRecital(sheetId, newRecital)
+                  
+                  // Create the events sheet for this recital
+                  await createRecitalEventsSheet(sheetId, newRecitalId)
+                  
+                  // Update local state
+                  setRecitals([...recitals, newRecital])
+                  setCurrentRecitalId(newRecitalId)
+                  
+                  alert(`Recital "${newRecital.name}" created successfully!`)
+                } catch (error) {
+                  console.error('Failed to create recital:', error)
+                  alert('Failed to create recital. Please check your connection and try again.')
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              className="add-recital-btn"
+            >
+              + Add Recital
+            </button>
+          </>
+        ) : (
+          <div className="no-recitals">
+            <p>No recitals found. </p>
+            <button
+              onClick={async () => {
+                const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
+                const newRecitalId = 'recital-1'
+                const newRecital = {
+                  id: newRecitalId,
+                  name: 'Spring Showcase 2024',
+                  date: new Date().toISOString().split('T')[0],
+                  location: 'Main Theater',
+                  school: 'Dance Studio',
+                  theme: 'Under the Sea',
+                  active: true,
+                }
+                
+                try {
+                  setLoading(true)
+                  
+                  // Create recital metadata
+                  await createRecital(sheetId, newRecital)
+                  
+                  // Create the events sheet for this recital
+                  await createRecitalEventsSheet(sheetId, newRecitalId)
+                  
+                  // Update local state
+                  setRecitals([newRecital])
+                  setCurrentRecitalId(newRecitalId)
+                  
+                  alert(`Recital "${newRecital.name}" created successfully!`)
+                } catch (error) {
+                  console.error('Failed to create recital:', error)
+                  alert('Failed to create recital. Please check your connection and try again.')
+                } finally {
+                  setLoading(false)
+                }
+              }}
+              className="add-recital-btn"
+            >
+              + Create First Recital
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="view-switcher">
         <button onClick={() => setCurrentView('dashboard')}>Dashboard</button>
         <button onClick={() => setCurrentView('checkin')}>Backstage Check-In</button>
