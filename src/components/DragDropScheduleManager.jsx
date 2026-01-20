@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { LoadingSkeleton } from './LoadingSkeleton';
 
 // Drag-and-Drop Item Types
 const ItemTypes = {
@@ -151,12 +152,39 @@ const DraggableSchedule = ({ schedule, index, moveSchedule, children }) => {
   );
 };
 
-const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts: externalConflicts }) => {
+const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts: externalConflicts, loading = false }) => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [localSchedules, setLocalSchedules] = useState(schedules);
   const [localConflicts, setLocalConflicts] = useState(externalConflicts || []);
+
+  if (loading) {
+    return (
+      <div className="schedule-loading">
+        <LoadingSkeleton type="text" width="250px" height="32px" count={1} gap="20px" />
+        
+        <div className="schedule-container">
+          <div className="dancers-panel">
+            <LoadingSkeleton type="text" width="150px" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="300px" count={1} gap="15px" />
+          </div>
+          
+          <div className="schedule-timeline">
+            <LoadingSkeleton type="text" width="150px" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={2} gap="15px" />
+          </div>
+          
+          <div className="conflicts-panel">
+            <LoadingSkeleton type="text" width="150px" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="80px" count={3} gap="10px" />
+          </div>
+        </div>
+        
+        <LoadingSkeleton type="rect" width="100%" height="80px" count={1} gap="20px" />
+      </div>
+    );
+  }
 
   // Sync local state with props
   React.useEffect(() => {

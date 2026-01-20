@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
 import { QrReader } from 'react-qr-reader';
+import { LoadingSkeleton, ListSkeleton } from './LoadingSkeleton';
 
-const BackstageCheckIn = ({ dancers, onUpdateStatus, theaterMode }) => {
+const BackstageCheckIn = ({ dancers, onUpdateStatus, theaterMode, loading = false }) => {
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState(null);
   const [scanSuccess, setScanSuccess] = useState(null);
+
+  if (loading) {
+    return (
+      <div className="checkin-loading">
+        <LoadingSkeleton type="text" width="200px" height="32px" count={1} gap="20px" />
+        <LoadingSkeleton type="button" width="150px" height="40px" count={1} gap="20px" />
+        <ListSkeleton items={3} />
+      </div>
+    );
+  }
 
   const handleStatusChange = (dancerId, status) => {
     onUpdateStatus(dancerId, status);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import BackstageCheckIn from './components/BackstageCheckIn';
 import QRCodeGenerator from './components/QRCodeGenerator';
+import { LoadingSkeleton, DashboardSkeleton } from './components/LoadingSkeleton';
 import { detectConflicts } from './core/conflictEngine';
 import { fetchSheetData, saveSchedule, updateDancerStatus, updateDancerMeasurements, signOut } from './services/googleSheets';
 import './App.css';
@@ -13,14 +14,52 @@ function App() {
   const [theaterMode, setTheaterMode] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard');
   const [showQRGenerator, setShowQRGenerator] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Placeholder: Load data from Google Sheets
+    // Load data from Google Sheets with loading states
     const loadData = async () => {
-      const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId';
-      const data = await fetchSheetData(sheetId);
-      setDancers(data);
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Simulate loading delay for better UX
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId';
+        const data = await fetchSheetData(sheetId);
+        setDancers(data);
+        
+        // Simulate loading schedules
+        await new Promise(resolve => setTimeout(resolve, 300));
+        // In a real app, you would fetch schedules from another endpoint
+        const mockSchedules = [
+          {
+            id: '1',
+            title: 'Opening Number',
+            date: new Date().toISOString().split('T')[0],
+            time: '18:00',
+            assignedDancers: []
+          },
+          {
+            id: '2',
+            title: 'Intermission Act',
+            date: new Date().toISOString().split('T')[0],
+            time: '18:30',
+            assignedDancers: []
+          }
+        ];
+        setSchedules(mockSchedules);
+        
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        setError('Failed to load data. Please check your connection and try again.');
+      } finally {
+        setLoading(false);
+      }
     };
+    
     loadData();
   }, []);
 
@@ -78,6 +117,32 @@ function App() {
     const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID;
     await saveSchedule(sheetId, newSchedule);
   };
+
+  if (loading) {
+    return (
+      <div className={`App ${theaterMode ? 'theater-mode' : ''}`}>
+        <DashboardSkeleton />
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+          <p>Loading Recital Planner...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`App ${theaterMode ? 'theater-mode' : ''}`}>
+        <div className="error-container">
+          <h2>❌ Error Loading Data</h2>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="retry-button">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`App ${theaterMode ? 'theater-mode' : ''}`}>

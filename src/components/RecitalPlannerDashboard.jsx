@@ -1,9 +1,73 @@
 import React, { useState } from 'react';
 import MeasurementDashboard from './MeasurementDashboard';
 import DragDropScheduleManager from './DragDropScheduleManager';
+import { LoadingSkeleton } from './LoadingSkeleton';
 
-const RecitalPlannerDashboard = ({ dancers, conflicts, onAddDancer, onUpdateDancer, schedules, onAddSchedule }) => {
+const RecitalPlannerDashboard = ({ dancers, conflicts, onAddDancer, onUpdateDancer, schedules, onAddSchedule, loading = false }) => {
   const [newDancer, setNewDancer] = useState({ name: '', role: '' });
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <LoadingSkeleton type="text" width="30%" height="32px" count={1} gap="20px" />
+        
+        <div className="skeleton-grid">
+          <div className="skeleton-card">
+            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
+            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
+          </div>
+          
+          <div className="skeleton-card">
+            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
+            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
+          </div>
+          
+          <div className="skeleton-card">
+            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
+            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
+          </div>
+        </div>
+        
+        <LoadingSkeleton type="rect" width="100%" height="200px" count={1} gap="20px" />
+      </div>
+    );
+  }
+=======
+const RecitalPlannerDashboard = ({ dancers, conflicts, onAddDancer, onUpdateDancer, schedules, onAddSchedule, loading = false }) => {
+  const [newDancer, setNewDancer] = useState({ name: '', role: '' });
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <LoadingSkeleton type="text" width="30%" height="32px" count={1} gap="20px" />
+        
+        <div className="skeleton-grid">
+          <div className="skeleton-card">
+            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
+            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
+          </div>
+          
+          <div className="skeleton-card">
+            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
+            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
+          </div>
+          
+          <div className="skeleton-card">
+            <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
+            <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
+            <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
+          </div>
+        </div>
+        
+        <LoadingSkeleton type="rect" width="100%" height="200px" count={1} gap="20px" />
+      </div>
+    );
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
