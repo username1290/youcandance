@@ -158,6 +158,42 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
   const [time, setTime] = useState('');
   const [localSchedules, setLocalSchedules] = useState(schedules);
   const [localConflicts, setLocalConflicts] = useState(externalConflicts || []);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState('all');
+  const [sortBy, setSortBy] = useState('name');
+
+  // Get unique roles for filter dropdown
+  const uniqueRoles = React.useMemo(() => {
+    const roles = new Set(dancers.map(dancer => dancer.role).filter(Boolean));
+    return ['all', ...Array.from(roles)];
+  }, [dancers]);
+
+  // Filter and sort dancers
+  const filteredAndSortedDancers = React.useMemo(() => {
+    return dancers
+      .filter(dancer => {
+        // Search filter
+        const matchesSearch = searchTerm === '' ||
+          dancer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (dancer.class && dancer.class.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (dancer.role && dancer.role.toLowerCase().includes(searchTerm.toLowerCase()));
+        
+        // Role filter
+        const matchesRole = filterRole === 'all' || dancer.role === filterRole;
+        
+        return matchesSearch && matchesRole;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'name') {
+          return a.name.localeCompare(b.name);
+        } else if (sortBy === 'class') {
+          return (a.class || '').localeCompare(b.class || '');
+        } else if (sortBy === 'role') {
+          return (a.role || '').localeCompare(b.role || '');
+        }
+        return 0;
+      });
+  }, [dancers, searchTerm, filterRole, sortBy]);
 
   if (loading) {
     return (
@@ -344,20 +380,73 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
       <div className="schedule-container">
         <DndProvider backend={HTML5Backend}>
           <div className="dancers-panel">
-            <h4>Available Dancers ({dancers.length})</h4>
+            <div className="dancers-header">
+              <h4>👥 Available Dancers</h4>
+              <div className="dancers-controls">
+                <div className="search-filter">
+                  <input
+                    type="text"
+                    placeholder="🔍 Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="dancer-search"
+                  />
+                </div>
+                <div className="filter-role">
+                  <select
+                    value={filterRole}
+                    onChange={(e) => setFilterRole(e.target.value)}
+                    className="role-filter"
+                  >
+                    {uniqueRoles.map(role => (
+                      <option key={role} value={role}>
+                        {role === 'all' ? 'All Roles' : role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="sort-by">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="sort-select"
+                  >
+                    <option value="name">Sort: Name</option>
+                    <option value="class">Sort: Class</option>
+                    <option value="role">Sort: Role</option>
+                  </select>
+                </div>
+              </div>
+              <div className="dancer-stats">
+                Showing {filteredAndSortedDancers.length} of {dancers.length} dancers
+                {searchTerm && <span className="search-badge">Filtered by: "{searchTerm}"</span>}
+              </div>
+            </div>
             <div className="dancers-list">
-              {dancers.map(dancer => (
-                <DraggableDancer
-                  key={`dancer-${dancer.id}`}
-                  dancer={dancer}
-                  isAssigned={isDancerAssigned(dancer.id)}
-                  conflicts={localConflicts}
-                  onConflictClick={(dancerId) => {
-                    const dancerConflicts = localConflicts.filter(c => c.dancerId === dancerId);
-                    alert(`Conflicts for ${dancer.name}:\n\n${dancerConflicts.map(c => `- ${c.description}`).join('\n')}`);
-                  }}
-                />
-              ))}
+              {filteredAndSortedDancers.length === 0 ? (
+                <div className="no-dancers-found">
+                  <p>No dancers match your search criteria.</p>
+                  <button onClick={() => {
+                    setSearchTerm('');
+                    setFilterRole('all');
+                  }} className="clear-filters-btn">
+                    Clear Filters
+                  </button>
+                </div>
+              ) : (
+                filteredAndSortedDancers.map(dancer => (
+                  <DraggableDancer
+                    key={`dancer-${dancer.id}`}
+                    dancer={dancer}
+                    isAssigned={isDancerAssigned(dancer.id)}
+                    conflicts={localConflicts}
+                    onConflictClick={(dancerId) => {
+                      const dancerConflicts = localConflicts.filter(c => c.dancerId === dancerId);
+                      alert(`Conflicts for ${dancer.name}:\n\n${dancerConflicts.map(c => `- ${c.description}`).join('\n')}`);
+                    }}
+                  />
+                ))
+              )}
             </div>
           </div>
 

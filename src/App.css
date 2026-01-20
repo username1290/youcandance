@@ -699,6 +699,77 @@
   color: white;
 }
 
+.dancers-header {
+  margin-bottom: 15px;
+}
+
+.dancers-header h4 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dancers-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.dancer-search {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.dancer-search:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.role-filter, .sort-select {
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.role-filter:focus, .sort-select:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.dancer-stats {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 .dancers-list {
   display: grid;
   gap: 10px;
@@ -711,6 +782,51 @@
 
 .theater-mode .dancers-list {
   background-color: #444;
+}
+
+.no-dancers-found {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.clear-filters-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.clear-filters-btn:hover {
+  background: #388E3C;
+}
+
+/* Theater mode adjustments for new elements */
+.theater-mode .dancer-search,
+.theater-mode .role-filter,
+.theater-mode .sort-select {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.theater-mode .search-badge {
+  background: rgba(76, 175, 80, 0.2);
+  color: #e8f5e9;
+}
+
+.theater-mode .clear-filters-btn {
+  background: rgba(76, 175, 80, 0.8);
+}
+
+.theater-mode .clear-filters-btn:hover {
+  background: rgba(76, 175, 80, 1);
 }
 
 .draggable-dancer {
@@ -1185,4 +1301,302 @@
   .qr-actions {
     flex-direction: column;
   }
+}
+
+/* Measurement Dashboard Styles */
+.measurement-dashboard {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.dashboard-header h3 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  min-width: 250px;
+  transition: all 0.3s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.dancer-count {
+  color: #666;
+  font-size: 14px;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.measurements-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 0.5fr;
+  background: #f8f9fa;
+  padding: 12px 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #e0e0e0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.header-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+}
+
+.header-cell:hover {
+  background: #e9ecef;
+  border-radius: 4px;
+}
+
+.dancer-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr 0.5fr;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s;
+  align-items: center;
+}
+
+.dancer-row:hover {
+  background: #f8f9fa;
+}
+
+.dancer-row.expanded {
+  background: #f0f8ff;
+}
+
+.dancer-cell {
+  padding: 0 5px;
+  font-size: 14px;
+}
+
+.dancer-name {
+  font-weight: 600;
+  color: #2c3e50;
+  display: block;
+}
+
+.dancer-class {
+  font-size: 12px;
+  color: #6c757d;
+  display: block;
+}
+
+.measurement-display {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.measurement-value {
+  background: #f8f9fa;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.edit-measurements {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.measurement-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.measurement-input label {
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.compact-input {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.compact-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 1px #4CAF50;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.edit-btn, .save-btn, .cancel-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.edit-btn {
+  color: #4CAF50;
+}
+
+.edit-btn:hover {
+  background: #e8f5e9;
+}
+
+.save-btn {
+  color: white;
+  background: #4CAF50;
+  margin-right: 5px;
+}
+
+.save-btn:hover {
+  background: #388E3C;
+}
+
+.cancel-btn {
+  color: white;
+  background: #f44336;
+}
+
+.cancel-btn:hover {
+  background: #d32f2f;
+}
+
+.no-results {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Compact mode for many dancers */
+@media (max-width: 1024px) {
+  .table-header, .dancer-row {
+    grid-template-columns: 1.5fr 1fr 1.5fr 0.5fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header, .dancer-row {
+    grid-template-columns: 1fr;
+  }
+
+  .header-cell, .dancer-cell {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .header-cell:last-child, .dancer-cell:last-child {
+    border-bottom: none;
+  }
+
+  .measurement-display, .edit-measurements {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .measurement-input {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .compact-input {
+    width: 80px;
+  }
+}
+
+/* Theater mode adjustments */
+.theater-mode .measurement-dashboard {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.theater-mode .dashboard-header {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+}
+
+.theater-mode .table-header {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.theater-mode .dancer-row {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.theater-mode .dancer-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.theater-mode .dancer-row.expanded {
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.theater-mode .measurement-value {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.theater-mode .compact-input {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.theater-mode .search-input {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
 }
