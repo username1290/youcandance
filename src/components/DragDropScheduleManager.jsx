@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { LoadingSkeleton } from './LoadingSkeleton';
+import LoadingSkeleton from './LoadingSkeleton';
 
 // Drag-and-Drop Item Types
 const ItemTypes = {

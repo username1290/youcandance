@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard';
 import BackstageCheckIn from './components/BackstageCheckIn';
 import QRCodeGenerator from './components/QRCodeGenerator';
-import { LoadingSkeleton, DashboardSkeleton } from './components/LoadingSkeleton';
+import LoadingSkeleton, { DashboardSkeleton } from './components/LoadingSkeleton';
 import { detectConflicts } from './core/conflictEngine';
 import { fetchSheetData, saveSchedule, updateDancerStatus, updateDancerMeasurements, signOut } from './services/googleSheets';
 import './App.css';

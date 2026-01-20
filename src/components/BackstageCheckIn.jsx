@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { QrReader } from 'react-qr-reader';
-import { LoadingSkeleton, ListSkeleton } from './LoadingSkeleton';
+import LoadingSkeleton, { ListSkeleton } from './LoadingSkeleton';
 
 const BackstageCheckIn = ({ dancers, onUpdateStatus, theaterMode, loading = false }) => {
   const [showScanner, setShowScanner] = useState(false);
