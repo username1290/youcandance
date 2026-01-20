@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Simple commit message validation
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Check if commit message is empty
+if [ -z "$COMMIT_MSG" ]; then
+  echo "❌ Commit message cannot be empty"
+  exit 1
+fi
+
+# Check if commit message is too short
+if [ ${#COMMIT_MSG} -lt 5 ]; then
+  echo "❌ Commit message should be at least 5 characters"
+  exit 1
+fi
+
+# Check if commit message starts with capital letter
+FIRST_CHAR=$(echo "$COMMIT_MSG" | head -c 1)
+if [[ ! "$FIRST_CHAR" =~ [A-Z] ]]; then
+  echo "⚠️  Commit message should start with a capital letter"
+  # Don't fail, just warn
+fi
+
+echo "✅ Commit message looks good!"
