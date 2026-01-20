@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useDrag, useDrop } from 'react-dnd';
 import LoadingSkeleton from './LoadingSkeleton';
 
 // Drag-and-Drop Item Types
@@ -65,7 +64,7 @@ const DroppableScheduleSlot = ({ schedule, dancers, onAssignDancer, onRemoveDanc
   };
 
   const assignedDancers = schedule.assignedDancers.map(id => 
-    dancers.find(d => d.id === id)
+    dancers.find(d => String(d.id) === String(id))
   ).filter(Boolean);
 
   return (
@@ -270,7 +269,7 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
         schedule.id === scheduleId
           ? {
               ...schedule,
-              assignedDancers: schedule.assignedDancers.filter(id => id !== dancerId)
+              assignedDancers: schedule.assignedDancers.filter(id => String(id) !== String(dancerId))
             }
           : schedule
       )
@@ -296,13 +295,13 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
 
   const getDancerAssignments = (dancerId) => {
     return localSchedules.filter(schedule => 
-      schedule.assignedDancers.includes(dancerId)
+      schedule.assignedDancers.some(id => String(id) === String(dancerId))
     );
   };
 
   const isDancerAssigned = (dancerId) => {
     return localSchedules.some(schedule => 
-      schedule.assignedDancers.includes(dancerId)
+      schedule.assignedDancers.some(id => String(id) === String(dancerId))
     );
   };
 
@@ -329,7 +328,7 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
       const commonDancers = currentDancers.filter(dancerId => nextDancers.includes(dancerId));
 
       commonDancers.forEach(dancerId => {
-        const dancer = dancers.find(d => d.id === dancerId);
+        const dancer = dancers.find(d => String(d.id) === String(dancerId));
         const dancerName = dancer ? dancer.name : 'Unknown Dancer';
         
         conflicts.push({
@@ -391,7 +390,6 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
       </div>
 
       <div className="schedule-container grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DndProvider backend={HTML5Backend}>
           <div className="dancers-panel bg-gray-50 p-4 rounded-lg border border-gray-200 h-[600px] flex flex-col">
             <div className="dancers-header mb-4">
               <h4 className="font-bold text-gray-700 mb-3">👥 Available Dancers</h4>
@@ -517,7 +515,6 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
               </ul>
             )}
           </div>
-        </DndProvider>
       </div>
 
       <div className="schedule-summary mt-6 pt-4 border-t border-gray-200 flex gap-6 text-sm text-gray-600">

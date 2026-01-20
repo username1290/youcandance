@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import MeasurementDashboard from './MeasurementDashboard'
 import DragDropScheduleManager from './DragDropScheduleManager'
 import LoadingSkeleton from './LoadingSkeleton'
@@ -72,87 +74,89 @@ const RecitalPlannerDashboard = ({
         ]
 
   return (
-    <div className="recital-planner-dashboard">
-      <h2>Recital Planner Dashboard</h2>
-      <div className="recital-tabs-global">
-        {displayRecitals.map((recital) => (
+    <DndProvider backend={HTML5Backend}>
+      <div className="recital-planner-dashboard">
+        <h2>Recital Planner Dashboard</h2>
+        <div className="recital-tabs-global">
+          {displayRecitals.map((recital) => (
+            <button
+              key={recital.id}
+              className={`recital-tab-global ${activeRecitalId === recital.id ? 'active' : ''}`}
+              onClick={() => (onRecitalChange ? onRecitalChange(recital.id) : null)}
+            >
+              {recital.name} <span className="count-badge">{getDancerCount(recital.id)}</span>
+            </button>
+          ))}
+        </div>
+        <div className="dashboard-actions" style={{ marginBottom: '24px' }}>
           <button
-            key={recital.id}
-            className={`recital-tab-global ${activeRecitalId === recital.id ? 'active' : ''}`}
-            onClick={() => (onRecitalChange ? onRecitalChange(recital.id) : null)}
+            className="checkin-nav-btn"
+            onClick={onNavigateToCheckIn}
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              backgroundColor: '#2c3e50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            }}
           >
-            {recital.name} <span className="count-badge">{getDancerCount(recital.id)}</span>
+            📋 Launch Backstage Check-In for{' '}
+            {displayRecitals.find((r) => r.id === activeRecitalId)?.name || 'Selected Recital'}
           </button>
-        ))}
-      </div>
-      <div className="dashboard-actions" style={{ marginBottom: '24px' }}>
-        <button
-          className="checkin-nav-btn"
-          onClick={onNavigateToCheckIn}
-          style={{
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            backgroundColor: '#2c3e50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          }}
-        >
-          📋 Launch Backstage Check-In for{' '}
-          {displayRecitals.find((r) => r.id === activeRecitalId)?.name || 'Selected Recital'}
-        </button>
-      </div>
-      <section>
-        <h3>Add Dancer</h3>
+        </div>
+        <section>
+          <h3>Add Dancer</h3>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Name"
-            value={newDancer.name}
-            onChange={(e) => setNewDancer({ ...newDancer, name: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Role"
-            value={newDancer.role}
-            onChange={(e) => setNewDancer({ ...newDancer, role: e.target.value })}
-          />
-          <button type="submit">Add</button>
-        </form>
-      </section>
-      <section>
-        <h3>Dancers</h3>
-        <ul>
-          {currentDancers.map((dancer) => (
-            <li key={dancer.id}>
-              {dancer.name} - {dancer.role}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <MeasurementDashboard dancers={currentDancers} onUpdateDancer={onUpdateDancer} />
-      <DragDropScheduleManager
-        schedules={currentSchedules}
-        onAddSchedule={onAddSchedule}
-        dancers={currentDancers}
-        conflicts={currentConflicts}
-      />
-      <section>
-        <h3>Conflicts</h3>
-        <ul>
-          {currentConflicts.map((conflict) => (
-            <li key={conflict.id}>{conflict.description}</li>
-          ))}
-        </ul>
-      </section>
-    </div>
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Name"
+              value={newDancer.name}
+              onChange={(e) => setNewDancer({ ...newDancer, name: e.target.value })}
+            />
+            <input
+              type="text"
+              placeholder="Role"
+              value={newDancer.role}
+              onChange={(e) => setNewDancer({ ...newDancer, role: e.target.value })}
+            />
+            <button type="submit">Add</button>
+          </form>
+        </section>
+        <section>
+          <h3>Dancers</h3>
+          <ul>
+            {currentDancers.map((dancer) => (
+              <li key={dancer.id}>
+                {dancer.name} - {dancer.role}
+              </li>
+            ))}
+          </ul>
+        </section>
+        <MeasurementDashboard dancers={currentDancers} onUpdateDancer={onUpdateDancer} />
+        <DragDropScheduleManager
+          schedules={currentSchedules}
+          onAddSchedule={onAddSchedule}
+          dancers={currentDancers}
+          conflicts={currentConflicts}
+        />
+        <section>
+          <h3>Conflicts</h3>
+          <ul>
+            {currentConflicts.map((conflict) => (
+              <li key={conflict.id}>{conflict.description}</li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </DndProvider>
   )
 }
 
