@@ -77,17 +77,19 @@ const RecitalPlannerDashboard = ({
   return (
     <div className="recital-planner-dashboard">
       <h2>Recital Planner Dashboard</h2>
-      <div className="recital-selector">
-        <label htmlFor="recital-select">Select Recital:</label>
-        <select
-          id="recital-select"
-          value={selectedRecital}
-          onChange={(e) => setSelectedRecital(e.target.value)}
-          className="recital-dropdown"
+      <div className="recital-tabs-global">
+        <button
+          className={`recital-tab-global ${selectedRecital === 'recital-1' ? 'active' : ''}`}
+          onClick={() => setSelectedRecital('recital-1')}
         >
-          <option value="recital-1">Recital 1 ({recital1Dancers.length} dancers)</option>
-          <option value="recital-2">Recital 2 ({recital2Dancers.length} dancers)</option>
-        </select>
+          Recital 1 ({recital1Dancers.length} dancers)
+        </button>
+        <button
+          className={`recital-tab-global ${selectedRecital === 'recital-2' ? 'active' : ''}`}
+          onClick={() => setSelectedRecital('recital-2')}
+        >
+          Recital 2 ({recital2Dancers.length} dancers)
+        </button>
       </div>
       <section>
         <h3>Add Dancer</h3>
