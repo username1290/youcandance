@@ -1,61 +1,61 @@
 // Google Sheets integration using Google Sheets API v4
 // Using Google Identity Services (GIS) for authentication
 
-const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || '';
-const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || '';
-const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-const RANGE = 'Sheet1!A:K';
+const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || ''
+const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || ''
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+const RANGE = 'Sheet1!A:K'
 
-let tokenClient = null;
-let accessToken = null;
+let tokenClient = null
+let accessToken = null
 
 // Load the Google API client library
 const loadGapiClient = () => {
   return new Promise((resolve, reject) => {
     if (window.gapi && window.gapi.client) {
-      resolve();
-      return;
+      resolve()
+      return
     }
-    const script = document.createElement('script');
-    script.src = 'https://apis.google.com/js/api.js';
+    const script = document.createElement('script')
+    script.src = 'https://apis.google.com/js/api.js'
     script.onload = () => {
       window.gapi.load('client', async () => {
         try {
           await window.gapi.client.init({
             apiKey: API_KEY,
             discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-          });
-          console.log('GAPI client initialized');
-          resolve();
+          })
+          console.log('GAPI client initialized')
+          resolve()
         } catch (error) {
-          console.error('Error initializing GAPI client:', error);
-          reject(error);
+          console.error('Error initializing GAPI client:', error)
+          reject(error)
         }
-      });
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-};
+      })
+    }
+    script.onerror = reject
+    document.head.appendChild(script)
+  })
+}
 
 // Load Google Identity Services
 const loadGis = () => {
   return new Promise((resolve, reject) => {
     if (window.google && window.google.accounts) {
-      initTokenClient();
-      resolve();
-      return;
+      initTokenClient()
+      resolve()
+      return
     }
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
     script.onload = () => {
-      initTokenClient();
-      resolve();
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-};
+      initTokenClient()
+      resolve()
+    }
+    script.onerror = reject
+    document.head.appendChild(script)
+  })
+}
 
 const initTokenClient = () => {
   tokenClient = window.google.accounts.oauth2.initTokenClient({
@@ -63,81 +63,81 @@ const initTokenClient = () => {
     scope: 'https://www.googleapis.com/auth/spreadsheets',
     callback: (response) => {
       if (response.error) {
-        console.error('Token error:', response);
-        return;
+        console.error('Token error:', response)
+        return
       }
-      accessToken = response.access_token;
-      console.log('Access token obtained');
+      accessToken = response.access_token
+      console.log('Access token obtained')
     },
-  });
-  console.log('GIS initialized');
-};
+  })
+  console.log('GIS initialized')
+}
 
 // Initialize both libraries
-let initPromise = null;
+let initPromise = null
 const init = () => {
   if (!initPromise) {
-    initPromise = Promise.all([loadGapiClient(), loadGis()]);
+    initPromise = Promise.all([loadGapiClient(), loadGis()])
   }
-  return initPromise;
-};
+  return initPromise
+}
 
 // Start initialization immediately
-init().catch(console.error);
+init().catch(console.error)
 
 export const authenticate = () => {
   return new Promise((resolve, reject) => {
     if (accessToken) {
-      resolve(accessToken);
-      return;
+      resolve(accessToken)
+      return
     }
     if (!tokenClient) {
-      reject(new Error('Token client not initialized'));
-      return;
+      reject(new Error('Token client not initialized'))
+      return
     }
     // Override callback for this specific request
     tokenClient.callback = (response) => {
       if (response.error) {
-        reject(response);
-        return;
+        reject(response)
+        return
       }
-      accessToken = response.access_token;
-      resolve(accessToken);
-    };
-    tokenClient.requestAccessToken({ prompt: '' });
-  });
-};
+      accessToken = response.access_token
+      resolve(accessToken)
+    }
+    tokenClient.requestAccessToken({ prompt: '' })
+  })
+}
 
 export const signOut = () => {
   if (accessToken && window.google) {
     window.google.accounts.oauth2.revoke(accessToken, () => {
-      console.log('Access token revoked');
-      accessToken = null;
-      window.location.reload();
-    });
+      console.log('Access token revoked')
+      accessToken = null
+      window.location.reload()
+    })
   } else {
-    accessToken = null;
-    window.location.reload();
+    accessToken = null
+    window.location.reload()
   }
-};
+}
 
 export const fetchSheetData = async (sheetId = SHEET_ID) => {
   try {
-    await init();
+    await init()
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RANGE}?key=${API_KEY}`
-    );
+    )
     if (!response.ok) {
-      throw new Error('Failed to fetch data from Google Sheets');
+      throw new Error('Failed to fetch data from Google Sheets')
     }
-    const data = await response.json();
+    const data = await response.json()
     if (!data.values || data.values.length === 0) {
-      return [];
+      return []
     }
-    const rows = data.values.slice(1);
+    const rows = data.values.slice(1)
     const dancers = rows.map((row, index) => {
-      const sheetIdVal = parseInt(row[0]);
-      const id = !isNaN(sheetIdVal) ? sheetIdVal : `dancer-${index}-${Date.now()}`;
+      const sheetIdVal = parseInt(row[0])
+      const id = !isNaN(sheetIdVal) ? sheetIdVal : `dancer-${index}-${Date.now()}`
       return {
         id,
         name: row[1] || '',
@@ -151,120 +151,316 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
         lastNotifiedDate: row[9] || '',
         checkInStatus: row[10] || 'Not Ready',
         rowIndex: index + 2,
-      };
-    });
-    console.log('Loaded dancers:', dancers.length);
-    return dancers;
+      }
+    })
+    console.log('Loaded dancers:', dancers.length)
+    return dancers
   } catch (error) {
-    console.error('Error fetching sheet data:', error);
+    console.error('Error fetching sheet data:', error)
     return [
-      { id: 1, name: 'Dancer 1', girth: 80, chest: 85, waist: 70, hips: 90, role: 'Lead', paidStatus: 'Paid', progressBySeamstress: 'Completed', lastNotifiedDate: '2023-10-01', checkInStatus: 'Not Ready', rowIndex: 2 },
-      { id: 2, name: 'Dancer 2', girth: 75, chest: 80, waist: 65, hips: 85, role: 'Ensemble', paidStatus: 'Unpaid', progressBySeamstress: 'In Progress', lastNotifiedDate: '2023-09-15', checkInStatus: 'Not Ready', rowIndex: 3 },
-    ];
+      {
+        id: 1,
+        name: 'Dancer 1',
+        girth: 80,
+        chest: 85,
+        waist: 70,
+        hips: 90,
+        role: 'Lead',
+        paidStatus: 'Paid',
+        progressBySeamstress: 'Completed',
+        lastNotifiedDate: '2023-10-01',
+        checkInStatus: 'Not Ready',
+        rowIndex: 2,
+      },
+      {
+        id: 2,
+        name: 'Dancer 2',
+        girth: 75,
+        chest: 80,
+        waist: 65,
+        hips: 85,
+        role: 'Ensemble',
+        paidStatus: 'Unpaid',
+        progressBySeamstress: 'In Progress',
+        lastNotifiedDate: '2023-09-15',
+        checkInStatus: 'Not Ready',
+        rowIndex: 3,
+      },
+    ]
   }
-};
+}
 
 export const updateDancerStatus = async (rowIndex, status) => {
   try {
-    await init();
-    const token = await authenticate();
-    
-    const range = `Sheet1!K${rowIndex}`;
+    await init()
+    const token = await authenticate()
+
+    const range = `Sheet1!K${rowIndex}`
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
       {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           values: [[status]],
         }),
       }
-    );
-    
+    )
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Update failed:', errorData);
-      throw new Error(errorData.error?.message || 'Failed to update status');
+      const errorData = await response.json()
+      console.error('Update failed:', errorData)
+      throw new Error(errorData.error?.message || 'Failed to update status')
     }
-    
-    const result = await response.json();
-    console.log(`Updated row ${rowIndex} status to ${status}`, result);
-    return result;
+
+    const result = await response.json()
+    console.log(`Updated row ${rowIndex} status to ${status}`, result)
+    return result
   } catch (error) {
-    console.error('Error updating status:', error);
-    throw error;
+    console.error('Error updating status:', error)
+    throw error
   }
-};
+}
 
 export const updateDancerMeasurements = async (rowIndex, measurements) => {
   try {
-    await init();
-    const token = await authenticate();
-    
+    await init()
+    const token = await authenticate()
+
     // Update columns C through F (girth, chest, waist, hips)
-    const range = `Sheet1!C${rowIndex}:F${rowIndex}`;
+    const range = `Sheet1!C${rowIndex}:F${rowIndex}`
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
       {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           values: [[measurements.girth, measurements.chest, measurements.waist, measurements.hips]],
         }),
       }
-    );
-    
+    )
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Update failed:', errorData);
-      throw new Error(errorData.error?.message || 'Failed to update measurements');
+      const errorData = await response.json()
+      console.error('Update failed:', errorData)
+      throw new Error(errorData.error?.message || 'Failed to update measurements')
     }
-    
-    const result = await response.json();
-    console.log(`Updated row ${rowIndex} measurements`, result);
-    return result;
+
+    const result = await response.json()
+    console.log(`Updated row ${rowIndex} measurements`, result)
+    return result
   } catch (error) {
-    console.error('Error updating measurements:', error);
-    throw error;
+    console.error('Error updating measurements:', error)
+    throw error
   }
-};
+}
 
 export const updateSheetData = async (sheetId, values) => {
   try {
-    await init();
-    const token = await authenticate();
-    
+    await init()
+    const token = await authenticate()
+
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RANGE}:append?valueInputOption=RAW`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           values: [values],
         }),
       }
-    );
-    
+    )
+
     if (!response.ok) {
-      throw new Error('Failed to append data');
+      throw new Error('Failed to append data')
     }
-    
-    console.log('Data appended');
+
+    console.log('Data appended')
   } catch (error) {
-    console.error('Error updating sheet:', error);
+    console.error('Error updating sheet:', error)
   }
-};
+}
 
 export const saveSchedule = async (sheetId, schedule) => {
-  const values = [schedule.id, schedule.title, schedule.date, schedule.time, schedule.assignedDancers.join(',')];
-  await updateSheetData(sheetId, values);
-};
+  const values = [
+    schedule.id,
+    schedule.title,
+    schedule.date,
+    schedule.time,
+    schedule.assignedDancers.join(','),
+  ]
+  await updateSheetData(sheetId, values)
+}
+
+// Sheet2 - Recital Events functions
+const RECITAL_RANGE = 'Sheet2!A:E'
+
+export const fetchRecitalEvents = async (sheetId = SHEET_ID) => {
+  try {
+    // For read operations, we don't need to initialize gapi/gis
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RECITAL_RANGE}?key=${API_KEY}`
+    )
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch recital events from Google Sheets: ${response.status} ${response.statusText}`
+      )
+    }
+    const data = await response.json()
+    if (!data.values || data.values.length === 0) {
+      return []
+    }
+    const rows = data.values.slice(1) // Skip header row
+    const events = rows.map((row, index) => {
+      const eventId = row[0] || `event-${index}-${Date.now()}`
+      return {
+        id: eventId,
+        title: row[1] || 'Untitled Event',
+        date: row[2] || '',
+        time: row[3] || '',
+        assignedDancers: row[4] ? row[4].split(',').map((id) => id.trim()) : [],
+        rowIndex: index + 2, // Google Sheets rows are 1-indexed, +1 for header
+      }
+    })
+    console.log('Loaded recital events:', events.length)
+    return events
+  } catch (error) {
+    console.error('Error fetching recital events:', error)
+    return [
+      {
+        id: 'event-1',
+        title: 'Opening Number',
+        date: '2023-12-15',
+        time: '18:00',
+        assignedDancers: [],
+        rowIndex: 2,
+      },
+      {
+        id: 'event-2',
+        title: 'Ballet Performance',
+        date: '2023-12-15',
+        time: '18:30',
+        assignedDancers: [],
+        rowIndex: 3,
+      },
+    ]
+  }
+}
+
+export const saveRecitalEvent = async (sheetId, recitalEvent) => {
+  try {
+    await init()
+    const token = await authenticate()
+
+    const values = [
+      recitalEvent.id,
+      recitalEvent.title,
+      recitalEvent.date,
+      recitalEvent.time,
+      recitalEvent.assignedDancers.join(','),
+    ]
+
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RECITAL_RANGE}:append?valueInputOption=RAW`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [values],
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to append recital event')
+    }
+
+    console.log('Recital event appended')
+  } catch (error) {
+    console.error('Error saving recital event:', error)
+    throw error
+  }
+}
+
+export const updateRecitalEvent = async (sheetId, rowIndex, updatedEvent) => {
+  try {
+    await init()
+    const token = await authenticate()
+
+    const range = `Sheet2!A${rowIndex}:E${rowIndex}`
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          values: [
+            [
+              updatedEvent.id,
+              updatedEvent.title,
+              updatedEvent.date,
+              updatedEvent.time,
+              updatedEvent.assignedDancers.join(','),
+            ],
+          ],
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Update failed:', errorData)
+      throw new Error(errorData.error?.message || 'Failed to update recital event')
+    }
+
+    const result = await response.json()
+    console.log(`Updated row ${rowIndex} recital event`, result)
+    return result
+  } catch (error) {
+    console.error('Error updating recital event:', error)
+    throw error
+  }
+}
+
+export const deleteRecitalEvent = async (sheetId, rowIndex) => {
+  try {
+    await init()
+    const token = await authenticate()
+
+    const deleteRange = `Sheet2!A${rowIndex}:E${rowIndex}`
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${deleteRange}:clear`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to delete recital event')
+    }
+
+    console.log('Recital event deleted successfully')
+  } catch (error) {
+    console.error('Error deleting recital event:', error)
+    throw error
+  }
+}
