@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import MeasurementDashboard from './MeasurementDashboard';
-import ScheduleManager from './ScheduleManager';
+import DragDropScheduleManager from './DragDropScheduleManager';
 
 const RecitalPlannerDashboard = ({ dancers, conflicts, onAddDancer, onUpdateDancer, schedules, onAddSchedule }) => {
   const [newDancer, setNewDancer] = useState({ name: '', role: '' });
@@ -43,7 +43,7 @@ const RecitalPlannerDashboard = ({ dancers, conflicts, onAddDancer, onUpdateDanc
         </ul>
       </section>
       <MeasurementDashboard dancers={dancers} onUpdateDancer={onUpdateDancer} />
-      <ScheduleManager schedules={schedules} onAddSchedule={onAddSchedule} dancers={dancers} />
+      <DragDropScheduleManager schedules={schedules} onAddSchedule={onAddSchedule} dancers={dancers} conflicts={conflicts} />
       <section>
         <h3>Conflicts</h3>
         <ul>
