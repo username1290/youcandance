@@ -199,7 +199,33 @@ export const updateDancerStatus = async (rowIndex, status) => {
     await init()
     const token = await authenticate()
 
-    const range = `Sheet1!K${rowIndex}`
+    // First, get the headers to find the correct column
+    const headersResponse = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!1:1?key=${API_KEY}`
+    )
+
+    if (!headersResponse.ok) {
+      throw new Error('Failed to get column headers')
+    }
+
+    const headersData = await headersResponse.json()
+    const headers = headersData.values[0] || []
+    const checkInStatusIndex = headers.findIndex(
+      (h) => h && h.toLowerCase().includes('check-in status')
+    )
+
+    if (checkInStatusIndex === -1) {
+      throw new Error('Check-in Status column not found. Please check your Google Sheet headers.')
+    }
+
+    // Convert to A1 notation (1-based)
+    const columnLetter = String.fromCharCode(65 + checkInStatusIndex)
+    const range = `Sheet1!${columnLetter}${rowIndex}`
+
+    console.log(
+      `Updating Check-in Status (column ${columnLetter}) for row ${rowIndex} to "${status}"`
+    )
+
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
       {
@@ -221,7 +247,7 @@ export const updateDancerStatus = async (rowIndex, status) => {
     }
 
     const result = await response.json()
-    console.log(`Updated row ${rowIndex} status to ${status}`, result)
+    console.log(`Successfully updated Check-in Status to ${status}`, result)
     return result
   } catch (error) {
     console.error('Error updating status:', error)
@@ -351,7 +377,12 @@ export const saveRecitalEvent = async (sheetId, recitalEvent, recitalId = 'recit
   }
 }
 
-export const updateRecitalEvent = async (sheetId, rowIndex, updatedEvent, recitalId = 'recital-1') => {
+export const updateRecitalEvent = async (
+  sheetId,
+  rowIndex,
+  updatedEvent,
+  recitalId = 'recital-1'
+) => {
   try {
     await init()
     const token = await authenticate()
@@ -465,8 +496,8 @@ export const fetchAllRecitals = async (sheetId = SHEET_ID) => {
         school: 'Main Studio',
         theme: 'Under the Sea',
         active: true,
-        rowIndex: 2
-      }
+        rowIndex: 2,
+      },
     ]
   }
 }
@@ -481,29 +512,33 @@ export const fetchRecitalEvents = async (sheetId = SHEET_ID, recitalId = 'recita
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${API_KEY}`
     )
-    
+
     // If sheet doesn't exist (400 error), return empty array
     if (response.status === 400) {
-      console.warn(`Sheet${sheetNumber} doesn't exist yet for recital ${recitalId}. Returning empty events.`)
+      console.warn(
+        `Sheet${sheetNumber} doesn't exist yet for recital ${recitalId}. Returning empty events.`
+      )
       return []
     }
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch events for ${recitalId}: ${response.status} ${response.statusText}`)
+      throw new Error(
+        `Failed to fetch events for ${recitalId}: ${response.status} ${response.statusText}`
+      )
     }
-    
+
     const data = await response.json()
     if (!data.values || data.values.length === 0) {
       return []
     }
-    
+
     const rows = data.values.slice(1) // Skip header row
     const events = rows.map((row, index) => ({
       id: row[0] || `event-${index}-${Date.now()}`,
       title: row[1] || 'Untitled Event',
       date: row[2] || '',
       time: row[3] || '',
-      assignedDancers: row[4] ? row[4].split(',').map(id => id.trim()) : [],
+      assignedDancers: row[4] ? row[4].split(',').map((id) => id.trim()) : [],
       recitalId: recitalId,
       rowIndex: index + 2,
     }))
@@ -527,7 +562,7 @@ export const createRecital = async (sheetId, recitalData) => {
       recitalData.location,
       recitalData.school,
       recitalData.theme,
-      recitalData.active ? 'TRUE' : 'FALSE'
+      recitalData.active ? 'TRUE' : 'FALSE',
     ]
 
     const response = await fetch(
@@ -576,15 +611,15 @@ export const createRecitalEventsSheet = async (sheetId, recitalId) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          values: [
-            ['EventID', 'Title', 'Date', 'Time', 'AssignedDancers']
-          ],
+          values: [['EventID', 'Title', 'Date', 'Time', 'AssignedDancers']],
         }),
       }
     )
 
     if (!response.ok) {
-      console.warn('Could not create recital events sheet automatically. It will be created when first event is added.')
+      console.warn(
+        'Could not create recital events sheet automatically. It will be created when first event is added.'
+      )
       return false
     }
 
@@ -603,7 +638,7 @@ export const updateRecital = async (sheetId, recitalId, updates) => {
 
     // First, find the recital's row
     const recitals = await fetchAllRecitals(sheetId)
-    const recital = recitals.find(r => r.id === recitalId)
+    const recital = recitals.find((r) => r.id === recitalId)
     if (!recital || !recital.rowIndex) {
       throw new Error('Recital not found')
     }
@@ -618,7 +653,7 @@ export const updateRecital = async (sheetId, recitalId, updates) => {
       updatedRecital.location,
       updatedRecital.school,
       updatedRecital.theme,
-      updatedRecital.active ? 'TRUE' : 'FALSE'
+      updatedRecital.active ? 'TRUE' : 'FALSE',
     ]
 
     const response = await fetch(
@@ -662,12 +697,12 @@ export const duplicateRecital = async (sheetId, sourceRecitalId, newRecitalData)
     const targetRange = `Sheet${targetSheetNumber}!A:E`
 
     // Prepare events with new recitalId
-    const eventsToCopy = sourceEvents.map(event => [
+    const eventsToCopy = sourceEvents.map((event) => [
       event.id.replace(sourceRecitalId, createdRecital.id),
       event.title,
       event.date,
       event.time,
-      event.assignedDancers.join(',')
+      event.assignedDancers.join(','),
     ])
 
     // Clear target sheet first (if it exists)
