@@ -56,29 +56,29 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
   })
 
   return (
-    <div className="measurement-dashboard">
-      <div className="dashboard-header">
-        <h3>📏 Measurement Dashboard</h3>
-        <div className="dashboard-controls">
+    <div className="measurement-dashboard bg-background rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
+      <div className="dashboard-header flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+        <h3 className="text-xl font-bold text-text flex items-center gap-2">📏 Measurement Dashboard</h3>
+        <div className="dashboard-controls flex items-center gap-4">
           <input
             type="text"
             placeholder="🔍 Search dancers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            className="search-input px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary w-64 bg-background text-text"
           />
-          <span className="dancer-count">
+          <span className="dancer-count text-gray-500 bg-gray-100 px-3 py-1 rounded-md text-sm">
             {filteredDancers.length} of {dancers.length} dancers
           </span>
         </div>
       </div>
 
-      <div className="measurements-table">
-        <div className="table-header">
-          <div className="header-cell name" onClick={() => handleSort('name')}>
+      <div className="measurements-table w-full border border-gray-200 rounded-lg overflow-hidden">
+        <div className="table-header grid grid-cols-[2fr_1fr_2fr_0.5fr] bg-gray-50 p-3 font-semibold text-gray-700 border-b border-gray-200">
+          <div className="header-cell name cursor-pointer flex items-center justify-between hover:bg-gray-200 rounded px-2" onClick={() => handleSort('name')}>
             Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
           </div>
-          <div className="header-cell class" onClick={() => handleSort('class')}>
+          <div className="header-cell class cursor-pointer flex items-center justify-between hover:bg-gray-200 rounded px-2" onClick={() => handleSort('class')}>
             Class {sortConfig.key === 'class' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
           </div>
           <div className="header-cell measurements">Measurements</div>
@@ -86,79 +86,79 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
         </div>
 
         {sortedDancers.length === 0 ? (
-          <div className="no-results">No dancers found matching your search.</div>
+          <div className="no-results p-8 text-center text-gray-500 italic">No dancers found matching your search.</div>
         ) : (
           sortedDancers.map((dancer) => (
             <div
               key={dancer.id}
-              className={`dancer-row ${expandedDancer === dancer.id ? 'expanded' : ''}`}
+              className={`dancer-row grid grid-cols-[2fr_1fr_2fr_0.5fr] p-3 border-b border-gray-100 items-center hover:bg-gray-50 transition-colors ${expandedDancer === dancer.id ? 'bg-blue-50' : ''}`}
             >
-              <div className="dancer-cell name" onClick={() => toggleExpand(dancer.id)}>
-                <span className="dancer-name">{dancer.name}</span>
-                {dancer.class && <span className="dancer-class">{dancer.class}</span>}
+              <div className="dancer-cell name cursor-pointer" onClick={() => toggleExpand(dancer.id)}>
+                <span className="dancer-name font-semibold text-text block">{dancer.name}</span>
+                {dancer.class && <span className="dancer-class text-xs text-gray-500 block">{dancer.class}</span>}
               </div>
-              <div className="dancer-cell class">{dancer.class || '—'}</div>
+              <div className="dancer-cell class text-sm text-gray-600">{dancer.class || '—'}</div>
               <div className="dancer-cell measurements">
                 {editing === dancer.id ? (
-                  <div className="edit-measurements">
-                    <div className="measurement-input">
-                      <label>G:</label>
+                  <div className="edit-measurements flex gap-2 flex-wrap">
+                    <div className="measurement-input flex items-center gap-1">
+                      <label className="text-xs font-bold text-gray-500">G:</label>
                       <input
                         type="number"
                         value={editData.girth || ''}
                         onChange={(e) => handleChange('girth', parseFloat(e.target.value) || 0)}
-                        className="compact-input"
+                        className="compact-input w-16 px-2 py-1 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="measurement-input">
-                      <label>C:</label>
+                    <div className="measurement-input flex items-center gap-1">
+                      <label className="text-xs font-bold text-gray-500">C:</label>
                       <input
                         type="number"
                         value={editData.chest || ''}
                         onChange={(e) => handleChange('chest', parseFloat(e.target.value) || 0)}
-                        className="compact-input"
+                        className="compact-input w-16 px-2 py-1 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="measurement-input">
-                      <label>W:</label>
+                    <div className="measurement-input flex items-center gap-1">
+                      <label className="text-xs font-bold text-gray-500">W:</label>
                       <input
                         type="number"
                         value={editData.waist || ''}
                         onChange={(e) => handleChange('waist', parseFloat(e.target.value) || 0)}
-                        className="compact-input"
+                        className="compact-input w-16 px-2 py-1 border border-gray-300 rounded text-sm"
                       />
                     </div>
-                    <div className="measurement-input">
-                      <label>H:</label>
+                    <div className="measurement-input flex items-center gap-1">
+                      <label className="text-xs font-bold text-gray-500">H:</label>
                       <input
                         type="number"
                         value={editData.hips || ''}
                         onChange={(e) => handleChange('hips', parseFloat(e.target.value) || 0)}
-                        className="compact-input"
+                        className="compact-input w-16 px-2 py-1 border border-gray-300 rounded text-sm"
                       />
                     </div>
                   </div>
                 ) : (
-                  <div className="measurement-display">
-                    <span className="measurement-value">G: {dancer.girth || '—'}</span>
-                    <span className="measurement-value">C: {dancer.chest || '—'}</span>
-                    <span className="measurement-value">W: {dancer.waist || '—'}</span>
-                    <span className="measurement-value">H: {dancer.hips || '—'}</span>
+                  <div className="measurement-display flex gap-3 flex-wrap">
+                    <span className="measurement-value bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">G: {dancer.girth || '—'}</span>
+                    <span className="measurement-value bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">C: {dancer.chest || '—'}</span>
+                    <span className="measurement-value bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">W: {dancer.waist || '—'}</span>
+                    <span className="measurement-value bg-gray-100 px-2 py-1 rounded text-xs text-gray-700">H: {dancer.hips || '—'}</span>
                   </div>
                 )}
               </div>
-              <div className="dancer-cell actions">
+              <div className="dancer-cell actions flex gap-2">
                 {editing === dancer.id ? (
                   <>
-                    <button onClick={handleSave} className="save-btn">
+                    <button onClick={handleSave} className="save-btn bg-primary hover:bg-green-600 text-white px-3 py-1 rounded text-sm">
                       ✓
                     </button>
-                    <button onClick={() => setEditing(null)} className="cancel-btn">
+                    <button onClick={() => setEditing(null)} className="cancel-btn bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
                       ✕
                     </button>
                   </>
                 ) : (
-                  <button onClick={() => handleEdit(dancer)} className="edit-btn">
+                  <button onClick={() => handleEdit(dancer)} className="edit-btn text-gray-400 hover:text-primary text-lg">
                     ✏️
                   </button>
                 )}

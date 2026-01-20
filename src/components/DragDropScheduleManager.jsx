@@ -33,19 +33,18 @@ const DraggableDancer = ({ dancer, onDrop, isAssigned, conflicts, onConflictClic
   return (
     <div
       ref={drag}
-      className={`draggable-dancer ${isDragging ? 'dragging' : ''} ${isAssigned ? 'assigned' : ''} ${hasConflicts ? 'has-conflicts' : ''}`}
-      style={{ opacity: isDragging ? 0.5 : 1 }}
+      className={`draggable-dancer bg-white p-3 mb-2 rounded-lg shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-all flex justify-between items-center ${isDragging ? 'opacity-50' : 'opacity-100'} ${isAssigned ? 'bg-green-50 border-green-200' : ''} ${hasConflicts ? 'bg-red-50 border-red-200' : ''}`}
       onClick={handleClick}
     >
-      <div className="dancer-info">
-        <span className="dancer-name">{dancer.name}</span>
-        {dancer.role && <span className="dancer-role">({dancer.role})</span>}
+      <div className="dancer-info flex flex-col">
+        <span className="dancer-name font-medium text-gray-800">{dancer.name}</span>
+        {dancer.role && <span className="dancer-role text-xs text-gray-500">{dancer.role}</span>}
+      </div>
         {hasConflicts && (
-          <span className="conflict-badge" title={`This dancer has ${conflictCount} scheduling conflict${conflictCount > 1 ? 's' : ''}`}>
+          <span className="conflict-badge bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold" title={`This dancer has ${conflictCount} scheduling conflict${conflictCount > 1 ? 's' : ''}`}>
             ⚠️ {conflictCount}
           </span>
         )}
-      </div>
     </div>
   );
 };
@@ -72,33 +71,35 @@ const DroppableScheduleSlot = ({ schedule, dancers, onAssignDancer, onRemoveDanc
   return (
     <div
       ref={drop}
-      className={`schedule-slot ${isOver ? 'over' : ''} ${canDrop ? 'can-drop' : ''}`}
+      className={`schedule-slot bg-white p-4 rounded-lg border-2 transition-colors min-h-[150px] flex flex-col ${isOver ? 'border-primary bg-green-50' : 'border-gray-200'} ${canDrop ? 'border-dashed' : ''}`}
     >
-      <div className="schedule-header">
-        <h4>{schedule.title}</h4>
-        <span>{schedule.date} </span>
+      <div className="schedule-header flex justify-between items-start mb-3 pb-2 border-b border-gray-100">
+        <div>
+          <h4 className="font-bold text-gray-800 m-0">{schedule.title}</h4>
+          <span className="text-xs text-gray-500">{schedule.date} </span>
+        </div>
         <input
           type="time"
           value={schedule.time || ''}
           onChange={handleTimeChange}
-          className="time-input"
+          className="time-input text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-primary"
         />
       </div>
-      <div className="assigned-dancers">
+      <div className="assigned-dancers flex-1 flex flex-col gap-2">
         {assignedDancers.length > 0 ? (
           assignedDancers.map(dancer => (
-            <div key={`assigned-${dancer.id}`} className="assigned-dancer">
-              {dancer.name}
+            <div key={`assigned-${dancer.id}`} className="assigned-dancer bg-gray-50 p-2 rounded border border-gray-200 text-sm flex justify-between items-center group">
+              <span className="font-medium text-gray-700">{dancer.name}</span>
               <button 
                 onClick={() => onRemoveDancer(schedule.id, dancer.id)}
-                className="remove-btn"
+                className="remove-btn text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 ×
               </button>
             </div>
           ))
         ) : (
-          <div className="empty-slot">Drop dancers here</div>
+          <div className="empty-slot text-gray-400 text-sm italic text-center py-4 border-2 border-dashed border-gray-100 rounded">Drop dancers here</div>
         )}
       </div>
     </div>
@@ -350,86 +351,100 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
   }, [localSchedules, detectConflicts]);
 
   return (
-    <div className="drag-drop-schedule-manager">
-      <h3>📅 Drag & Drop Recital Scheduler</h3>
+    <div className="drag-drop-schedule-manager bg-background rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
+      <h3 className="text-xl font-bold text-text mb-6 flex items-center gap-2">📅 Drag & Drop Recital Scheduler</h3>
 
-      <div className="schedule-controls">
-        <form onSubmit={handleSubmit} className="add-schedule-form">
-          <input
-            type="text"
-            placeholder="Event Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
-          <button type="submit">Add Event</button>
+      <div className="schedule-controls mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+        <form onSubmit={handleSubmit} className="add-schedule-form flex gap-4 flex-wrap items-end">
+          <div className="flex-1 min-w-[200px]">
+            <label className="block text-xs font-bold text-gray-500 mb-1">Event Title</label>
+            <input
+              type="text"
+              placeholder="e.g. Act 1 Scene 1"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary bg-white"
+            />
+          </div>
+          <div className="w-40">
+            <label className="block text-xs font-bold text-gray-500 mb-1">Date</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary bg-white"
+            />
+          </div>
+          <div className="w-32">
+            <label className="block text-xs font-bold text-gray-500 mb-1">Time</label>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary bg-white"
+            />
+          </div>
+          <button type="submit" className="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold h-[42px] transition-colors">Add Event</button>
         </form>
       </div>
 
-      <div className="schedule-container">
+      <div className="schedule-container grid grid-cols-1 lg:grid-cols-3 gap-6">
         <DndProvider backend={HTML5Backend}>
-          <div className="dancers-panel">
-            <div className="dancers-header">
-              <h4>👥 Available Dancers</h4>
-              <div className="dancers-controls">
+          <div className="dancers-panel bg-gray-50 p-4 rounded-lg border border-gray-200 h-[600px] flex flex-col">
+            <div className="dancers-header mb-4">
+              <h4 className="font-bold text-gray-700 mb-3">👥 Available Dancers</h4>
+              <div className="dancers-controls flex flex-col gap-2">
                 <div className="search-filter">
                   <input
                     type="text"
                     placeholder="🔍 Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="dancer-search"
+                    className="dancer-search w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
                   />
                 </div>
-                <div className="filter-role">
-                  <select
-                    value={filterRole}
-                    onChange={(e) => setFilterRole(e.target.value)}
-                    className="role-filter"
-                  >
-                    {uniqueRoles.map(role => (
-                      <option key={role} value={role}>
-                        {role === 'all' ? 'All Roles' : role}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="sort-by">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="sort-select"
-                  >
-                    <option value="name">Sort: Name</option>
-                    <option value="class">Sort: Class</option>
-                    <option value="role">Sort: Role</option>
-                  </select>
+                <div className="flex gap-2">
+                  <div className="filter-role flex-1">
+                    <select
+                      value={filterRole}
+                      onChange={(e) => setFilterRole(e.target.value)}
+                      className="role-filter w-full px-2 py-2 border border-gray-300 rounded text-sm bg-white focus:outline-none focus:border-primary"
+                    >
+                      {uniqueRoles.map(role => (
+                        <option key={role} value={role}>
+                          {role === 'all' ? 'All Roles' : role}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sort-by flex-1">
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="sort-select w-full px-2 py-2 border border-gray-300 rounded text-sm bg-white focus:outline-none focus:border-primary"
+                    >
+                      <option value="name">Sort: Name</option>
+                      <option value="class">Sort: Class</option>
+                      <option value="role">Sort: Role</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <div className="dancer-stats">
-                Showing {filteredAndSortedDancers.length} of {dancers.length} dancers
-                {searchTerm && <span className="search-badge">Filtered by: "{searchTerm}"</span>}
+              <div className="dancer-stats text-xs text-gray-500 mt-2 flex justify-between items-center">
+                <span>{filteredAndSortedDancers.length} / {dancers.length}</span>
+                {searchTerm && <span className="search-badge bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">Filtered</span>}
               </div>
             </div>
-            <div className="dancers-list">
+            <div className="dancers-list overflow-y-auto flex-1 pr-1">
               {filteredAndSortedDancers.length === 0 ? (
-                <div className="no-dancers-found">
-                  <p>No dancers match your search criteria.</p>
+                <div className="no-dancers-found text-center py-8 text-gray-500">
+                  <p className="mb-2">No dancers match.</p>
                   <button onClick={() => {
                     setSearchTerm('');
                     setFilterRole('all');
-                  }} className="clear-filters-btn">
+                  }} className="clear-filters-btn text-primary hover:underline text-sm">
                     Clear Filters
                   </button>
                 </div>
@@ -450,10 +465,11 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
             </div>
           </div>
 
-          <div className="schedule-timeline">
-            <h4>Recital Timeline</h4>
+          <div className="schedule-timeline col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200 min-h-[600px] flex flex-col">
+            <h4 className="font-bold text-gray-700 mb-4">Recital Timeline</h4>
+            <div className="timeline-content overflow-y-auto flex-1 pr-2 space-y-4">
             {localSchedules.length === 0 ? (
-              <div className="empty-timeline">
+              <div className="empty-timeline text-center py-12 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
                 <p>No events scheduled yet. Add an event to get started!</p>
               </div>
             ) : (
@@ -474,25 +490,26 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
                 </DraggableSchedule>
               ))
             )}
+            </div>
           </div>
 
-          <div className="conflicts-panel">
-            <h4>⚠️ Scheduling Conflicts ({localConflicts.length})</h4>
+          <div className="conflicts-panel col-span-1 lg:col-span-3 bg-red-50 p-4 rounded-lg border border-red-100 mt-6">
+            <h4 className="font-bold text-red-800 mb-3 flex items-center gap-2">⚠️ Scheduling Conflicts ({localConflicts.length})</h4>
             {localConflicts.length === 0 ? (
-              <div className="no-conflicts">
-                <p>✅ No conflicts detected. Great job!</p>
+              <div className="no-conflicts text-green-600 font-medium flex items-center gap-2">
+                <span>✅</span> No conflicts detected. Great job!
               </div>
             ) : (
-              <ul className="conflicts-list">
+              <ul className="conflicts-list space-y-2 max-h-[200px] overflow-y-auto">
                 {localConflicts.map((conflict, index) => (
                   <li 
                     key={`conflict-${index}`} 
-                    className={`conflict-item conflict-${conflict.severity}`}
+                    className={`conflict-item p-3 rounded bg-white border border-red-100 shadow-sm flex items-start gap-3`}
                   >
-                    <span className="conflict-severity">
+                    <span className="conflict-severity text-lg">
                       {conflict.severity === 'high' ? '🔴' : conflict.severity === 'medium' ? '🟡' : '🟢'}
                     </span>
-                    <span className="conflict-description">
+                    <span className="conflict-description text-sm text-gray-700">
                       {conflict.description}
                     </span>
                   </li>
@@ -503,11 +520,11 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
         </DndProvider>
       </div>
 
-      <div className="schedule-summary">
-        <h4>📊 Schedule Summary</h4>
-        <p>Total Events: {localSchedules.length}</p>
-        <p>Total Dancers: {dancers.length}</p>
-        <p>Assigned Dancers: {localSchedules.reduce((sum, schedule) => sum + schedule.assignedDancers.length, 0)}</p>
+      <div className="schedule-summary mt-6 pt-4 border-t border-gray-200 flex gap-6 text-sm text-gray-600">
+        <div className="font-semibold text-gray-800">📊 Schedule Summary</div>
+        <div>Total Events: <span className="font-bold">{localSchedules.length}</span></div>
+        <div>Total Dancers: <span className="font-bold">{dancers.length}</span></div>
+        <div>Assigned Dancers: <span className="font-bold">{localSchedules.reduce((sum, schedule) => sum + schedule.assignedDancers.length, 0)}</span></div>
       </div>
     </div>
   );
