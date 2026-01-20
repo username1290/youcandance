@@ -14,6 +14,28 @@ The primary goals are to automate costume conflict detection, standardize measur
 * **Reliability:** Offline-first caching for theater "dead zones."  
 * **Design Standards:** High-contrast "Theater Mode" (accessible UI), touch-friendly targets (min 44px), and metric-only data fields.
 
+## **2.5. Design Framework (Tailwind CSS)**
+
+To ensure consistency and reduce custom CSS, the project will utilize Tailwind CSS with a strict configuration.
+
+### **Color Palette**
+*   **Primary (Action):** `emerald-600` (Success/Go), `emerald-700` (Hover)
+*   **Secondary (Accent):** `violet-600` (Creative/AI), `violet-700` (Hover)
+*   **Danger (Alert):** `rose-500` (Conflict/Stop)
+*   **Warning (Caution):** `amber-400` (Near Conflict)
+*   **Neutral (Surface):** `slate-50` (Background), `slate-900` (Text)
+*   **Theater Mode:** `neutral-900` (Background), `yellow-400` (High Contrast Text)
+
+### **Typography**
+*   **Headings:** `text-2xl` (Page), `text-xl` (Section), `font-bold`
+*   **Body:** `text-base` (Standard), `text-sm` (Metadata)
+*   **Labels:** `text-xs`, `uppercase`, `tracking-wide`
+
+### **Spacing System**
+*   **Container Padding:** `p-4` (Mobile), `p-6` (Tablet), `p-8` (Desktop)
+*   **Component Gap:** `gap-4` (Standard), `gap-2` (Tight)
+*   **Touch Targets:** `min-h-[44px]`, `min-w-[44px]` (Accessibility)
+
 ## **3\. Phased Deliverables**
 
 ### **Phase 0: The MVP (The "Sheet-to-Stage" Bridge)**

@@ -113,26 +113,28 @@ const BackstageCheckIn = ({ dancers, onUpdateStatus, theaterMode, loading = fals
         {scanSuccess && <div className="scan-success">{scanSuccess}</div>}
         {scanError && <div className="scan-error">{scanError}</div>}
       </div>
-      <div className="dancer-list">
+      <div className="dancer-list compact-list">
         {dancers.map(dancer => (
-          <div key={dancer.id} className="dancer-card">
-            <h3>{dancer.name}</h3>
-            <p>Role: {dancer.role}</p>
-            <div className="status-buttons">
+          <div key={dancer.id} className="dancer-row-compact">
+            <div className="dancer-info-compact">
+              <span className="dancer-name">{dancer.name}</span>
+              <span className="dancer-role">{dancer.role}</span>
+            </div>
+            <div className="status-buttons-compact">
               <button
-                className={`status-btn ${dancer.checkInStatus === 'Dressed' ? 'active' : ''}`}
+                className={`status-btn btn-green ${dancer.checkInStatus === 'Dressed' ? 'active' : ''}`}
                 onClick={() => handleStatusChange(dancer.id, 'Dressed')}
               >
                 Dressed
               </button>
               <button
-                className={`status-btn ${dancer.checkInStatus === 'In Wings' ? 'active' : ''}`}
+                className={`status-btn btn-yellow ${dancer.checkInStatus === 'In Wings' ? 'active' : ''}`}
                 onClick={() => handleStatusChange(dancer.id, 'In Wings')}
               >
                 In Wings
               </button>
               <button
-                className={`status-btn ${dancer.checkInStatus === 'Not Ready' ? 'active' : ''}`}
+                className={`status-btn btn-red ${dancer.checkInStatus === 'Not Ready' ? 'active' : ''}`}
                 onClick={() => handleStatusChange(dancer.id, 'Not Ready')}
               >
                 Not Ready
