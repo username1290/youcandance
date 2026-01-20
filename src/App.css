@@ -144,6 +144,58 @@
   border-radius: 8px;
 }
 
+.recital-selector {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.recital-selector label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.recital-dropdown {
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.recital-dropdown:hover {
+  border-color: #4caf50;
+}
+
+.recital-dropdown:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+.theater-mode .recital-selector label {
+  color: #ff0;
+}
+
+.theater-mode .recital-dropdown {
+  background: #333;
+  border: 2px solid #555;
+  color: #fff;
+}
+
+.theater-mode .recital-dropdown:hover {
+  border-color: #ff0;
+}
+
+.theater-mode .recital-dropdown:focus {
+  border-color: #ff0;
+  box-shadow: 0 0 0 2px rgba(255, 255, 0, 0.2);
+}
+
 .theater-mode h2,
 .theater-mode h3 {
   color: #ff0;

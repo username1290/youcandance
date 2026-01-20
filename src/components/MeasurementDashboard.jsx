@@ -6,7 +6,6 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
   const [expandedDancer, setExpandedDancer] = useState(null)
-  const [activeRecital, setActiveRecital] = useState('recital-1')
 
   const handleEdit = (dancer) => {
     setEditing(dancer.id)
@@ -41,11 +40,7 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
       (dancer.class && dancer.class.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  const recital1Dancers = filteredDancers.filter((dancer) => dancer.recitalId === 'recital-1')
-  const recital2Dancers = filteredDancers.filter((dancer) => dancer.recitalId === 'recital-2')
-  const currentDancers = activeRecital === 'recital-1' ? recital1Dancers : recital2Dancers
-
-  const sortedDancers = [...currentDancers].sort((a, b) => {
+  const sortedDancers = [...filteredDancers].sort((a, b) => {
     if (!sortConfig.key) return 0
 
     const aValue = a[sortConfig.key]
@@ -73,23 +68,9 @@ const MeasurementDashboard = ({ dancers, onUpdateDancer }) => {
             className="search-input"
           />
           <span className="dancer-count">
-            {currentDancers.length} of {filteredDancers.length} dancers
+            {filteredDancers.length} of {dancers.length} dancers
           </span>
         </div>
-      </div>
-      <div className="recital-tabs">
-        <button
-          className={`recital-tab ${activeRecital === 'recital-1' ? 'active' : ''}`}
-          onClick={() => setActiveRecital('recital-1')}
-        >
-          Recital 1 ({recital1Dancers.length})
-        </button>
-        <button
-          className={`recital-tab ${activeRecital === 'recital-2' ? 'active' : ''}`}
-          onClick={() => setActiveRecital('recital-2')}
-        >
-          Recital 2 ({recital2Dancers.length})
-        </button>
       </div>
 
       <div className="measurements-table">
