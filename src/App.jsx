@@ -259,7 +259,7 @@ function App() {
 
       <div className="view-switcher">
         <button onClick={() => setCurrentView('dashboard')}>Dashboard</button>
-        <button onClick={() => setCurrentView('checkin')}>Backstage Check-In</button>
+        {/* Backstage Check-In button moved to Dashboard */}
         <button onClick={() => setShowQRGenerator(true)} className="qr-generate-btn">
           Generate QR Codes
         </button>
@@ -281,10 +281,14 @@ function App() {
           recitals={recitals}
           currentRecitalId={currentRecitalId}
           onRecitalChange={setCurrentRecitalId}
+          onNavigateToCheckIn={() => setCurrentView('checkin')}
         />
       ) : (
         <BackstageCheckIn
-          dancers={dancers}
+          dancers={dancers.filter(
+            (d) =>
+              d.recitalId === currentRecitalId || (!d.recitalId && currentRecitalId === 'recital-1')
+          )}
           onUpdateStatus={handleUpdateCheckInStatus}
           theaterMode={theaterMode}
         />

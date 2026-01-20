@@ -14,6 +14,7 @@ const RecitalPlannerDashboard = ({
   recitals = [],
   currentRecitalId,
   onRecitalChange,
+  onNavigateToCheckIn,
 }) => {
   const [newDancer, setNewDancer] = useState({ name: '', role: '' })
 
@@ -83,6 +84,29 @@ const RecitalPlannerDashboard = ({
             {recital.name} <span className="count-badge">{getDancerCount(recital.id)}</span>
           </button>
         ))}
+      </div>
+      <div className="dashboard-actions" style={{ marginBottom: '24px' }}>
+        <button
+          className="checkin-nav-btn"
+          onClick={onNavigateToCheckIn}
+          style={{
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            backgroundColor: '#2c3e50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          }}
+        >
+          📋 Launch Backstage Check-In for{' '}
+          {displayRecitals.find((r) => r.id === activeRecitalId)?.name || 'Selected Recital'}
+        </button>
       </div>
       <section>
         <h3>Add Dancer</h3>
