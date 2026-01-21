@@ -321,13 +321,14 @@ export const updateSheetData = async (sheetId, values) => {
 }
 
 export const saveSchedule = async (sheetId, schedule) => {
-  const values = [
-    schedule.id,
-    schedule.title,
-    schedule.date,
-    schedule.time,
-    schedule.assignedDancers.join(','),
-  ]
+  // Ensure assignedDancers is an array before joining
+  const dancersArray = Array.isArray(schedule.assignedDancers)
+    ? schedule.assignedDancers
+    : schedule.assignedDancers
+      ? [schedule.assignedDancers]
+      : []
+
+  const values = [schedule.id, schedule.title, schedule.date, schedule.time, dancersArray.join(',')]
   await updateSheetData(sheetId, values)
 }
 
@@ -344,12 +345,19 @@ export const saveRecitalEvent = async (sheetId, recitalEvent, recitalId = 'recit
     const sheetNumber = parseInt(recitalNumber) + 1
     const range = `Sheet${sheetNumber}!A:E`
 
+    // Ensure assignedDancers is an array before joining
+    const dancersArray = Array.isArray(recitalEvent.assignedDancers)
+      ? recitalEvent.assignedDancers
+      : recitalEvent.assignedDancers
+        ? [recitalEvent.assignedDancers]
+        : []
+
     const values = [
       recitalEvent.id,
       recitalEvent.title,
       recitalEvent.date,
       recitalEvent.time,
-      recitalEvent.assignedDancers.join(','),
+      dancersArray.join(','),
     ]
 
     const response = await fetch(
@@ -370,7 +378,15 @@ export const saveRecitalEvent = async (sheetId, recitalEvent, recitalId = 'recit
       throw new Error('Failed to append recital event')
     }
 
-    console.log('Recital event appended')
+    const result = await response.json()
+    console.log('Recital event appended:', result)
+
+    // Return the rowIndex for the newly created event
+    // The Google Sheets API doesn't directly return the row number for append operations,
+    // so we need to fetch the data again to get the correct rowIndex
+    const eventsData = await fetchRecitalEvents(sheetId, recitalId)
+    const newEvent = eventsData.find((e) => e.id === recitalEvent.id)
+    return newEvent ? newEvent.rowIndex : null
   } catch (error) {
     console.error('Error saving recital event:', error)
     throw error
@@ -391,6 +407,14 @@ export const updateRecitalEvent = async (
     const recitalNumber = recitalId.replace('recital-', '')
     const sheetNumber = parseInt(recitalNumber) + 1
     const range = `Sheet${sheetNumber}!A${rowIndex}:E${rowIndex}`
+
+    // Ensure assignedDancers is an array before joining
+    const dancersArray = Array.isArray(updatedEvent.assignedDancers)
+      ? updatedEvent.assignedDancers
+      : updatedEvent.assignedDancers
+        ? [updatedEvent.assignedDancers]
+        : []
+
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=RAW`,
       {
@@ -406,7 +430,7 @@ export const updateRecitalEvent = async (
               updatedEvent.title,
               updatedEvent.date,
               updatedEvent.time,
-              updatedEvent.assignedDancers.join(','),
+              dancersArray.join(','),
             ],
           ],
         }),
@@ -697,13 +721,22 @@ export const duplicateRecital = async (sheetId, sourceRecitalId, newRecitalData)
     const targetRange = `Sheet${targetSheetNumber}!A:E`
 
     // Prepare events with new recitalId
-    const eventsToCopy = sourceEvents.map((event) => [
-      event.id.replace(sourceRecitalId, createdRecital.id),
-      event.title,
-      event.date,
-      event.time,
-      event.assignedDancers.join(','),
-    ])
+    const eventsToCopy = sourceEvents.map((event) => {
+      // Ensure assignedDancers is an array before joining
+      const dancersArray = Array.isArray(event.assignedDancers)
+        ? event.assignedDancers
+        : event.assignedDancers
+          ? [event.assignedDancers]
+          : []
+
+      return [
+        event.id.replace(sourceRecitalId, createdRecital.id),
+        event.title,
+        event.date,
+        event.time,
+        dancersArray.join(','),
+      ]
+    })
 
     // Clear target sheet first (if it exists)
     try {

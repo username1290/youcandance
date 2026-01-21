@@ -176,7 +176,11 @@ function App() {
 
     try {
       const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
-      await saveRecitalEvent(sheetId, newSchedule, currentRecitalId)
+      const rowIndex = await saveRecitalEvent(sheetId, newSchedule, currentRecitalId)
+      if (rowIndex) {
+        // Update the schedule with the rowIndex so future updates work
+        setSchedules(schedules.map((s) => (s.id === newSchedule.id ? { ...s, rowIndex } : s)))
+      }
     } catch (error) {
       console.error('Failed to sync recital event to Google Sheets', error)
       alert('Failed to save recital event to Google Sheets. Please check your connection.')
@@ -285,10 +289,7 @@ function App() {
         />
       ) : (
         <BackstageCheckIn
-          dancers={dancers.filter(
-            (d) =>
-              d.recitalId === currentRecitalId || (!d.recitalId && currentRecitalId === 'recital-1')
-          )}
+          dancers={dancers.filter((d) => d.recitalId === currentRecitalId || !d.recitalId)}
           onUpdateStatus={handleUpdateCheckInStatus}
           theaterMode={theaterMode}
         />

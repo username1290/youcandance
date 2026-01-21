@@ -25,22 +25,17 @@ const RecitalPlannerDashboard = ({
 
   // Helper to get dancer count for a recital
   const getDancerCount = (recitalId) => {
-    return dancers.filter(
-      (dancer) => dancer.recitalId === recitalId || (!dancer.recitalId && recitalId === 'recital-1')
-    ).length
+    return dancers.filter((dancer) => dancer.recitalId === recitalId || !dancer.recitalId).length
   }
 
   // Filter data by selected recital
   const currentDancers = dancers.filter(
-    (dancer) =>
-      dancer.recitalId === activeRecitalId || (!dancer.recitalId && activeRecitalId === 'recital-1')
+    (dancer) => dancer.recitalId === activeRecitalId || !dancer.recitalId
   )
 
   // Schedules are already filtered by App.jsx fetching, but we filter again just in case mixed data is passed
   const currentSchedules = schedules.filter(
-    (schedule) =>
-      schedule.recitalId === activeRecitalId ||
-      (!schedule.recitalId && activeRecitalId === 'recital-1')
+    (schedule) => schedule.recitalId === activeRecitalId || !schedule.recitalId
   )
 
   const currentConflicts = conflicts.filter((conflict) =>
