@@ -4,6 +4,7 @@ import BackstageCheckIn from './components/BackstageCheckIn'
 import QRCodeGenerator from './components/QRCodeGenerator'
 import LoadingSkeleton, { DashboardSkeleton } from './components/LoadingSkeleton'
 import Settings from './components/Settings' 
+import Login from './components/Login'
 import { detectConflicts } from './core/conflictEngine'
 import {
   fetchSheetData,
@@ -23,6 +24,11 @@ import {
 import './App.css'
 
 function App() {
+  const [user, setUser] = useState(() => {
+    const saved = sessionStorage.getItem('app_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [dancers, setDancers] = useState([])
   const [conflicts, setConflicts] = useState([])
   const [schedules, setSchedules] = useState([])
@@ -61,6 +67,11 @@ function App() {
   const [error, setError] = useState(null)
   const [lastSync, setLastSync] = useState(Date.now())
   const syncTimeoutRef = useRef(null)
+
+  const handleLoginSuccess = (profile) => {
+    setUser(profile);
+    sessionStorage.setItem('app_user', JSON.stringify(profile));
+  };
 
   const updateRecitalConfigs = (newConfigs) => {
     setRecitalConfigs(newConfigs);
@@ -290,6 +301,10 @@ function App() {
     }
   }
 
+  if (!user) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
   if (loading) {
     return (
       <div className={`App ${theaterMode ? 'theater-mode' : ''}`}>
@@ -342,7 +357,11 @@ function App() {
             <button onClick={() => setTheaterMode(!theaterMode)} className="px-3 py-1.5 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded text-sm font-medium transition-colors">
                 {theaterMode ? 'Exit Theater Mode' : 'Theater Mode'}
             </button>
-            <button onClick={signOut} className="text-sm text-red-500 hover:text-red-700 font-medium ml-2">
+            <button onClick={() => {
+              signOut(); 
+              sessionStorage.removeItem('app_user');
+              setUser(null);
+            }} className="text-sm text-red-500 hover:text-red-700 font-medium ml-2">
             Sign Out
             </button>
             {/* Old view switcher items can be merged or removed if redundant */}

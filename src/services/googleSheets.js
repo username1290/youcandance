@@ -84,7 +84,7 @@ const loadGis = () => {
 const initTokenClient = () => {
   tokenClient = window.google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
     callback: (response) => {
       if (response.error) {
         console.error('Token error:', response)
@@ -151,6 +151,28 @@ export const authenticate = () => {
     }
     tokenClient.requestAccessToken({ prompt: '' })
   })
+}
+
+export const getUserProfile = async () => {
+  try {
+    await init()
+    const token = await authenticate()
+    
+    const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch user profile')
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+    throw error
+  }
 }
 
 export const signOut = () => {

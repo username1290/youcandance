@@ -62,7 +62,11 @@ export default function Settings({ onConfigsChange, initialConfigs }) {
         <button 
           onClick={handleAdd}
           disabled={!newName || !newSheetId}
-          className="w-full py-2 text-white rounded font-medium transition-colors bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            backgroundColor: (!newName || !newSheetId) ? '#6b7280' : '#059669',
+            opacity: (!newName || !newSheetId) ? 0.5 : 1
+          }}
+          className="w-full py-2 text-white rounded font-medium transition-colors hover:brightness-110 disabled:cursor-not-allowed"
         >
           Add Recital
         </button>
