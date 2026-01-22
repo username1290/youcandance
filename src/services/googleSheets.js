@@ -2,7 +2,7 @@
 // Using Google Identity Services (GIS) for authentication
 
 const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY || ''
-const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || ''
+// const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID || '' // Removed hardcoded SHEET_ID
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 const RANGE = 'Sheet1!A:M' // Added recitalId column (L) and recitalSpecificRole (M)
 const RECITAL_METADATA_RANGE = 'Sheet4!A:G'
@@ -170,7 +170,8 @@ export const signOut = () => {
   }
 }
 
-export const fetchSheetData = async (sheetId = SHEET_ID) => {
+export const fetchSheetData = async (sheetId) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const response = await fetch(
@@ -244,14 +245,15 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
   }
 }
 
-export const updateDancerStatus = async (rowIndex, status) => {
+export const updateDancerStatus = async (rowIndex, status, sheetId) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
 
     // First, get the headers to find the correct column
     const headersResponse = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!1:1?key=${API_KEY}`
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!1:1?key=${API_KEY}`
     )
 
     if (!headersResponse.ok) {
@@ -277,7 +279,7 @@ export const updateDancerStatus = async (rowIndex, status) => {
     )
 
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=RAW`,
       {
         method: 'PUT',
         headers: {
@@ -305,7 +307,8 @@ export const updateDancerStatus = async (rowIndex, status) => {
   }
 }
 
-export const updateDancerMeasurements = async (rowIndex, measurements) => {
+export const updateDancerMeasurements = async (rowIndex, measurements, sheetId) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
@@ -313,7 +316,7 @@ export const updateDancerMeasurements = async (rowIndex, measurements) => {
     // Update columns C through F (girth, chest, waist, hips)
     const range = `Sheet1!C${rowIndex}:F${rowIndex}`
     const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${range}?valueInputOption=RAW`,
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?valueInputOption=RAW`,
       {
         method: 'PUT',
         headers: {
@@ -386,6 +389,7 @@ export const saveSchedule = async (sheetId, schedule) => {
 const RECITAL_RANGE = 'Sheet2!A:E'
 
 export const saveRecitalEvent = async (sheetId, recitalEvent, recitalId = 'recital-1') => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
@@ -450,6 +454,7 @@ export const updateRecitalEvent = async (
   updatedEvent,
   recitalId = 'recital-1'
 ) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
@@ -505,6 +510,7 @@ export const updateRecitalEvent = async (
 }
 
 export const deleteRecitalEvent = async (sheetId, rowIndex, recitalId = 'recital-1') => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
@@ -537,7 +543,8 @@ export const deleteRecitalEvent = async (sheetId, rowIndex, recitalId = 'recital
 }
 
 // Multi-Recital Management Functions
-export const fetchAllRecitals = async (sheetId = SHEET_ID) => {
+export const fetchAllRecitals = async (sheetId) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RECITAL_METADATA_RANGE}?key=${API_KEY}`
@@ -580,7 +587,8 @@ export const fetchAllRecitals = async (sheetId = SHEET_ID) => {
 }
 
 
-export const fetchRecitalEvents = async (sheetId = SHEET_ID, recitalId = 'recital-1') => {
+export const fetchRecitalEvents = async (sheetId, recitalId = 'recital-1') => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   // Map recitalId to sheet number (Sheet2 = recital-1, Sheet3 = recital-2, etc.)
   const recitalNumber = recitalId.replace('recital-', '')
   let sheetNumber = parseInt(recitalNumber) + 1 // Sheet2 for recital-1, Sheet3 for recital-2
@@ -696,6 +704,7 @@ export const fetchRecitalEvents = async (sheetId = SHEET_ID, recitalId = 'recita
 }
 
 export const createRecital = async (sheetId, recitalData) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
@@ -738,6 +747,7 @@ export const createRecital = async (sheetId, recitalData) => {
 
 // Helper function to create a new sheet for recital events
 export const createRecitalEventsSheet = async (sheetId, recitalId) => {
+  if (!sheetId) throw new Error("No Spreadsheet ID provided");
   try {
     await init()
     const token = await authenticate()
