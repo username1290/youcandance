@@ -10,6 +10,29 @@ const RECITAL_METADATA_RANGE = 'Sheet4!A:G'
 let tokenClient = null
 let accessToken = null
 
+// --- Persistence Helpers ---
+const STORAGE_KEY_TOKEN = 'google_access_token';
+const STORAGE_KEY_EXPIRY = 'google_token_expiry';
+
+const saveToken = (token, expiresInSeconds) => {
+  const expiryTime = Date.now() + (expiresInSeconds * 1000);
+  sessionStorage.setItem(STORAGE_KEY_TOKEN, token);
+  sessionStorage.setItem(STORAGE_KEY_EXPIRY, expiryTime.toString());
+  accessToken = token;
+};
+
+const getStoredToken = () => {
+  const token = sessionStorage.getItem(STORAGE_KEY_TOKEN);
+  const expiry = sessionStorage.getItem(STORAGE_KEY_EXPIRY);
+  
+  if (token && expiry && Date.now() < parseInt(expiry)) {
+    console.log('Using valid stored access token');
+    return token;
+  }
+  return null;
+};
+// ---------------------------
+
 // Load the Google API client library
 const loadGapiClient = () => {
   return new Promise((resolve, reject) => {
@@ -67,10 +90,19 @@ const initTokenClient = () => {
         console.error('Token error:', response)
         return
       }
-      accessToken = response.access_token
-      console.log('Access token obtained')
+      // Save token with expiry (using default 3599s if not provided, though it usually is)
+      const expiresIn = response.expires_in || 3599; 
+      saveToken(response.access_token, expiresIn);
+      console.log('Access token obtained and stored')
     },
   })
+  
+  // Attempt to restore token on init
+  const stored = getStoredToken();
+  if (stored) {
+    accessToken = stored;
+  }
+  
   console.log('GIS initialized')
 }
 
@@ -88,10 +120,21 @@ init().catch(console.error)
 
 export const authenticate = () => {
   return new Promise((resolve, reject) => {
+    // 1. Check in-memory variable
     if (accessToken) {
       resolve(accessToken)
       return
     }
+    
+    // 2. Check storage
+    const stored = getStoredToken();
+    if (stored) {
+      accessToken = stored;
+      resolve(stored);
+      return;
+    }
+
+    // 3. Request new token
     if (!tokenClient) {
       reject(new Error('Token client not initialized'))
       return
@@ -102,8 +145,9 @@ export const authenticate = () => {
         reject(response)
         return
       }
-      accessToken = response.access_token
-      resolve(accessToken)
+      const expiresIn = response.expires_in || 3599;
+      saveToken(response.access_token, expiresIn);
+      resolve(response.access_token)
     }
     tokenClient.requestAccessToken({ prompt: '' })
   })
@@ -114,10 +158,14 @@ export const signOut = () => {
     window.google.accounts.oauth2.revoke(accessToken, () => {
       console.log('Access token revoked')
       accessToken = null
+      sessionStorage.removeItem(STORAGE_KEY_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEY_EXPIRY);
       window.location.reload()
     })
   } else {
     accessToken = null
+    sessionStorage.removeItem(STORAGE_KEY_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEY_EXPIRY);
     window.location.reload()
   }
 }
@@ -137,8 +185,10 @@ export const fetchSheetData = async (sheetId = SHEET_ID) => {
     }
     const rows = data.values.slice(1)
     const dancers = rows.map((row, index) => {
-      const sheetIdVal = parseInt(row[0])
-      const id = !isNaN(sheetIdVal) ? sheetIdVal : `dancer-${index}-${Date.now()}`
+      // Step 1: Support robust UUIDs (Strings) instead of fragile Integers
+      const rawId = row[0]
+      const id = (rawId && rawId.length > 0) ? rawId : `dancer-${index}-${Date.now()}`
+      
       return {
         id,
         name: row[1] || '',

@@ -127,7 +127,8 @@ function App() {
   }, [currentRecitalId])
 
   const handleAddDancer = (newDancer) => {
-    const dancer = { ...newDancer, id: Date.now() } // Simple ID generation
+    // Step 1: Use UUIDs for robust unique IDs across sheets/schools
+    const dancer = { ...newDancer, id: crypto.randomUUID() } 
     setDancers([...dancers, dancer])
     // In real app, save to Google Sheets
   }
