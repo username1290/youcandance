@@ -12,11 +12,14 @@ const RecitalPlannerDashboard = ({
   onUpdateDancer,
   schedules,
   onAddSchedule,
+  onUpdateSchedule,
   loading = false,
   recitals = [],
   currentRecitalId,
   onRecitalChange,
   onNavigateToCheckIn,
+  onManualRefresh,
+  lastSync,
 }) => {
   const [newDancer, setNewDancer] = useState({ name: '', role: '' })
 
@@ -83,7 +86,7 @@ const RecitalPlannerDashboard = ({
             </button>
           ))}
         </div>
-        <div className="dashboard-actions" style={{ marginBottom: '24px' }}>
+        <div className="dashboard-actions" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button
             className="checkin-nav-btn"
             onClick={onNavigateToCheckIn}
@@ -105,6 +108,31 @@ const RecitalPlannerDashboard = ({
             📋 Launch Backstage Check-In for{' '}
             {displayRecitals.find((r) => r.id === activeRecitalId)?.name || 'Selected Recital'}
           </button>
+          <button
+            className="refresh-btn"
+            onClick={onManualRefresh}
+            style={{
+              padding: '10px 18px',
+              fontSize: '15px',
+              fontWeight: '500',
+              backgroundColor: '#059669',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              marginLeft: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+            }}
+            title="Refresh from Google Sheets"
+          >
+            🔄 Refresh
+          </button>
+          <span style={{ fontSize: '13px', color: '#666', marginLeft: '8px' }}>
+            Synced {lastSync ? `${Math.floor((Date.now() - lastSync) / 60000)} minute${Math.floor((Date.now() - lastSync) / 60000) === 1 ? '' : 's'} ago` : 'never'}
+          </span>
         </div>
         <section>
           <h3>Add Dancer</h3>
@@ -139,7 +167,9 @@ const RecitalPlannerDashboard = ({
         <DragDropScheduleManager
           schedules={currentSchedules}
           onAddSchedule={onAddSchedule}
+          onUpdateSchedule={onUpdateSchedule}
           dancers={currentDancers}
+          allDancers={dancers}
           conflicts={currentConflicts}
         />
         <section>

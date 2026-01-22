@@ -342,7 +342,8 @@ export const saveRecitalEvent = async (sheetId, recitalEvent, recitalId = 'recit
 
     // Map recitalId to sheet number
     const recitalNumber = recitalId.replace('recital-', '')
-    const sheetNumber = parseInt(recitalNumber) + 1
+    let sheetNumber = parseInt(recitalNumber) + 1
+    if (sheetNumber === 4) sheetNumber = 5
     const range = `Sheet${sheetNumber}!A:E`
 
     // Ensure assignedDancers is an array before joining
@@ -405,7 +406,8 @@ export const updateRecitalEvent = async (
 
     // Map recitalId to sheet number
     const recitalNumber = recitalId.replace('recital-', '')
-    const sheetNumber = parseInt(recitalNumber) + 1
+    let sheetNumber = parseInt(recitalNumber) + 1
+    if (sheetNumber === 4) sheetNumber = 5
     const range = `Sheet${sheetNumber}!A${rowIndex}:E${rowIndex}`
 
     // Ensure assignedDancers is an array before joining
@@ -459,7 +461,8 @@ export const deleteRecitalEvent = async (sheetId, rowIndex, recitalId = 'recital
 
     // Map recitalId to sheet number
     const recitalNumber = recitalId.replace('recital-', '')
-    const sheetNumber = parseInt(recitalNumber) + 1
+    let sheetNumber = parseInt(recitalNumber) + 1
+    if (sheetNumber === 4) sheetNumber = 5
     const deleteRange = `Sheet${sheetNumber}!A${rowIndex}:E${rowIndex}`
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${deleteRange}:clear`,
@@ -526,21 +529,86 @@ export const fetchAllRecitals = async (sheetId = SHEET_ID) => {
   }
 }
 
+
 export const fetchRecitalEvents = async (sheetId = SHEET_ID, recitalId = 'recital-1') => {
   // Map recitalId to sheet number (Sheet2 = recital-1, Sheet3 = recital-2, etc.)
   const recitalNumber = recitalId.replace('recital-', '')
-  const sheetNumber = parseInt(recitalNumber) + 1 // Sheet2 for recital-1, Sheet3 for recital-2
-  const range = `Sheet${sheetNumber}!A:E`
+  let sheetNumber = parseInt(recitalNumber) + 1 // Sheet2 for recital-1, Sheet3 for recital-2
+  
+  // Skip Sheet4 (Metadata) if calculated
+  if (sheetNumber === 4) sheetNumber = 5
+
+  let range = `Sheet${sheetNumber}!A:E`
 
   try {
-    const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${API_KEY}`
+
+    let response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${API_KEY}`
     )
 
-    // If sheet doesn't exist (400 error), return empty array
+    // Retry logic: If default sheet name fails, try to resolve via metadata
+    if (response.status === 400) {
+      console.warn(`Default sheet name Sheet${sheetNumber} failed. Trying to resolve via metadata...`)
+      try {
+        const metaResponse = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${API_KEY}`
+        )
+        const metaData = await metaResponse.json()
+        
+        // Try to find sheet by index
+        // Default assumption:
+        // Index 0: Dancers (Sheet1)
+        // Index 1: Recital 1 (Sheet2)
+        // Index 2: Recital 2 (Sheet3)
+        // Index 3: Metadata (Sheet4)
+        // ...
+        
+        const targetRecitalIndex = parseInt(recitalNumber) // 1 for recital-1, 2 for recital-2
+        
+        // Adjust for Metadata sheet being at index 3 (Sheet4)
+        // If we are looking for recital-3 (index 3 logically), it might be pushed to index 4 physically?
+        // This is fragile. Better to look for "SheetN" unless renamed.
+        
+        // Search by title match primarily
+        const targetTitle = `Sheet${sheetNumber}`
+        const sheetByName = metaData.sheets.find(s => s.properties.title === targetTitle)
+        
+        let resolvedTitle = null
+        if (sheetByName) {
+           resolvedTitle = sheetByName.properties.title
+        } else {
+           // Fallback to index based on recital number
+           // +1 offset because Sheet1 is index 0
+           // recital-1 -> index 1
+           // recital-2 -> index 2
+           // recital-3 -> index 4 (skip index 3/Sheet4) ??? 
+           
+           let targetIndex = parseInt(recitalNumber)
+           // If we are past the metadata sheet (Sheet4 / index 3), shift +1?
+           if (targetIndex >= 3) targetIndex += 1
+           
+           if (metaData.sheets && metaData.sheets[targetIndex]) {
+              resolvedTitle = metaData.sheets[targetIndex].properties.title
+           }
+        }
+
+        if (resolvedTitle) {
+          console.log(`Resolved ${recitalId} to sheet "${resolvedTitle}"`)
+          range = `'${resolvedTitle}'!A:E`
+          
+          response = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${API_KEY}`
+          )
+        }
+      } catch (metaError) {
+        console.error('Failed to resolve sheet name via metadata:', metaError)
+      }
+    }
+
+    // If sheet still doesn't exist (400 error), return empty array
     if (response.status === 400) {
       console.warn(
-        `Sheet${sheetNumber} doesn't exist yet for recital ${recitalId}. Returning empty events.`
+        `Sheet for ${recitalId} doesn't exist yet. Returning empty events.`
       )
       return []
     }
@@ -553,6 +621,7 @@ export const fetchRecitalEvents = async (sheetId = SHEET_ID, recitalId = 'recita
 
     const data = await response.json()
     if (!data.values || data.values.length === 0) {
+      console.warn(`No event data found for ${recitalId} (Sheet${sheetNumber})`)
       return []
     }
 
@@ -565,11 +634,13 @@ export const fetchRecitalEvents = async (sheetId = SHEET_ID, recitalId = 'recita
       assignedDancers: row[4] ? row[4].split(',').map((id) => id.trim()) : [],
       recitalId: recitalId,
       rowIndex: index + 2,
+      _raw: row,
     }))
-    console.log(`Loaded ${events.length} events for ${recitalId}`)
+    console.log(`[DEBUG] fetchRecitalEvents: Recital ${recitalId} (Sheet${sheetNumber}) raw rows:`, data.values)
+    console.log(`[DEBUG] fetchRecitalEvents: Recital ${recitalId} (Sheet${sheetNumber}) parsed events:`, events)
     return events
   } catch (error) {
-    console.error(`Error fetching events for ${recitalId}:`, error)
+    console.error(`[DEBUG] Error fetching events for ${recitalId}:`, error)
     return []
   }
 }
@@ -622,7 +693,11 @@ export const createRecitalEventsSheet = async (sheetId, recitalId) => {
     const token = await authenticate()
 
     const recitalNumber = recitalId.replace('recital-', '')
-    const sheetNumber = parseInt(recitalNumber) + 1
+    let sheetNumber = parseInt(recitalNumber) + 1
+    
+    // Skip Sheet4 (Metadata)
+    if (sheetNumber === 4) sheetNumber = 5
+
     const sheetTitle = `Sheet${sheetNumber}`
 
     // Create the sheet with headers
@@ -717,7 +792,8 @@ export const duplicateRecital = async (sheetId, sourceRecitalId, newRecitalData)
     // 2. Copy events from source recital
     const sourceEvents = await fetchRecitalEvents(sheetId, sourceRecitalId)
     const recitalNumber = createdRecital.id.replace('recital-', '')
-    const targetSheetNumber = parseInt(recitalNumber) + 1
+    let targetSheetNumber = parseInt(recitalNumber) + 1
+    if (targetSheetNumber === 4) targetSheetNumber = 5
     const targetRange = `Sheet${targetSheetNumber}!A:E`
 
     // Prepare events with new recitalId

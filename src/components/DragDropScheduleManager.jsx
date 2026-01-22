@@ -152,7 +152,7 @@ const DraggableSchedule = ({ schedule, index, moveSchedule, children }) => {
   );
 };
 
-const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts: externalConflicts, loading = false }) => {
+const DragDropScheduleManager = ({ schedules, onAddSchedule, onUpdateSchedule, dancers, allDancers, conflicts: externalConflicts, loading = false }) => {
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -161,6 +161,11 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [sortBy, setSortBy] = useState('name');
+  // Track last loaded schedules for sync
+  const [lastLoadedSchedules, setLastLoadedSchedules] = useState(schedules);
+  
+  // Use allDancers for lookups if provided, otherwise fallback to dancers (for backward compatibility)
+  const lookupDancers = allDancers || dancers;
 
   // Get unique roles for filter dropdown
   const uniqueRoles = React.useMemo(() => {
@@ -223,9 +228,14 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
   }
 
   // Sync local state with props
+  // Ensure localSchedules are always in sync with prop schedules (from Google Sheets)
   React.useEffect(() => {
-    setLocalSchedules(schedules);
-  }, [schedules]);
+    // Only update if schedules actually changed (avoid overwriting local edits)
+    if (JSON.stringify(schedules) !== JSON.stringify(lastLoadedSchedules)) {
+      setLocalSchedules(schedules);
+      setLastLoadedSchedules(schedules);
+    }
+  }, [schedules, lastLoadedSchedules]);
 
   React.useEffect(() => {
     setLocalConflicts(externalConflicts || []);
@@ -251,38 +261,68 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
   };
 
   const assignDancerToSchedule = useCallback((scheduleId, dancerId) => {
-    setLocalSchedules(prevSchedules => 
-      prevSchedules.map(schedule => 
-        schedule.id === scheduleId 
-          ? {
-              ...schedule,
-              assignedDancers: [...schedule.assignedDancers, dancerId]
-            }
-          : schedule
-      )
-    );
-  }, []);
+    setLocalSchedules(prevSchedules => {
+      let updatedSchedule = null;
+      const newSchedules = prevSchedules.map(schedule => {
+        if (schedule.id === scheduleId) {
+          // Check if dancer is already assigned to avoid duplicates
+          if (schedule.assignedDancers.some(id => String(id) === String(dancerId))) {
+            return schedule;
+          }
+          updatedSchedule = {
+            ...schedule,
+            assignedDancers: [...schedule.assignedDancers, dancerId]
+          };
+          return updatedSchedule;
+        }
+        return schedule;
+      });
+      
+      if (updatedSchedule && onUpdateSchedule) {
+        onUpdateSchedule(updatedSchedule);
+      }
+      return newSchedules;
+    });
+  }, [onUpdateSchedule]);
 
   const removeDancerFromSchedule = useCallback((scheduleId, dancerId) => {
-    setLocalSchedules(prevSchedules => 
-      prevSchedules.map(schedule => 
-        schedule.id === scheduleId
-          ? {
-              ...schedule,
-              assignedDancers: schedule.assignedDancers.filter(id => String(id) !== String(dancerId))
-            }
-          : schedule
-      )
-    );
-  }, []);
+    setLocalSchedules(prevSchedules => {
+      let updatedSchedule = null;
+      const newSchedules = prevSchedules.map(schedule => {
+        if (schedule.id === scheduleId) {
+          updatedSchedule = {
+            ...schedule,
+            assignedDancers: schedule.assignedDancers.filter(id => String(id) !== String(dancerId))
+          };
+          return updatedSchedule;
+        }
+        return schedule;
+      });
+
+      if (updatedSchedule && onUpdateSchedule) {
+        onUpdateSchedule(updatedSchedule);
+      }
+      return newSchedules;
+    });
+  }, [onUpdateSchedule]);
 
   const updateSchedule = useCallback((scheduleId, updates) => {
-    setLocalSchedules(prevSchedules => 
-      prevSchedules.map(schedule => 
-        schedule.id === scheduleId ? { ...schedule, ...updates } : schedule
-      )
-    );
-  }, []);
+    setLocalSchedules(prevSchedules => {
+      let updatedSchedule = null;
+      const newSchedules = prevSchedules.map(schedule => {
+        if (schedule.id === scheduleId) {
+          updatedSchedule = { ...schedule, ...updates };
+          return updatedSchedule;
+        }
+        return schedule;
+      });
+      
+      if (updatedSchedule && onUpdateSchedule) {
+        onUpdateSchedule(updatedSchedule);
+      }
+      return newSchedules;
+    });
+  }, [onUpdateSchedule]);
 
   const moveSchedule = useCallback((dragIndex, hoverIndex) => {
     setLocalSchedules(prevSchedules => {
@@ -328,7 +368,7 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
       const commonDancers = currentDancers.filter(dancerId => nextDancers.includes(dancerId));
 
       commonDancers.forEach(dancerId => {
-        const dancer = dancers.find(d => String(d.id) === String(dancerId));
+        const dancer = lookupDancers.find(d => String(d.id) === String(dancerId));
         const dancerName = dancer ? dancer.name : 'Unknown Dancer';
         
         conflicts.push({
@@ -341,7 +381,7 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
     }
 
     return conflicts;
-  }, [dancers]);
+  }, [lookupDancers]);
 
   // Update conflicts whenever schedules change
   useEffect(() => {
@@ -480,7 +520,7 @@ const DragDropScheduleManager = ({ schedules, onAddSchedule, dancers, conflicts:
                 >
                   <DroppableScheduleSlot
                     schedule={schedule}
-                    dancers={dancers}
+                    dancers={lookupDancers}
                     onAssignDancer={assignDancerToSchedule}
                     onRemoveDancer={removeDancerFromSchedule}
                     onUpdateSchedule={updateSchedule}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import RecitalPlannerDashboard from './components/RecitalPlannerDashboard'
 import BackstageCheckIn from './components/BackstageCheckIn'
 import QRCodeGenerator from './components/QRCodeGenerator'
@@ -32,27 +32,24 @@ function App() {
   const [showQRGenerator, setShowQRGenerator] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [lastSync, setLastSync] = useState(Date.now())
+  const syncTimeoutRef = useRef(null)
 
-  useEffect(() => {
-    // Load data from Google Sheets with loading states
-    const loadData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-
-        // Simulate loading delay for better UX
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
-        const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId'
-
-        // Load recitals metadata first
-        const recitalsData = await fetchAllRecitals(sheetId)
-        setRecitals(recitalsData)
-
-        // Set first active recital as default, or first recital if none active
+  // General sync function
+  const syncAll = async (recitalId = currentRecitalId) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID || 'sheetId'
+      // Load recitals metadata first
+      const recitalsData = await fetchAllRecitals(sheetId)
+      setRecitals(recitalsData)
+      // Set first active recital as default, or first recital if none active
+      if (!recitalId) {
         if (recitalsData.length > 0) {
           const firstActive = recitalsData.find((r) => r.active) || recitalsData[0]
           setCurrentRecitalId(firstActive.id)
+          recitalId = firstActive.id
         } else {
           // If no recitals exist, create a default one
           console.warn('No recitals found in Sheet4. Creating default recital...')
@@ -65,38 +62,41 @@ function App() {
             theme: 'Under the Sea',
             active: true,
           }
-
           try {
             await createRecital(sheetId, defaultRecital)
             await createRecitalEventsSheet(sheetId, 'recital-1')
             setRecitals([defaultRecital])
             setCurrentRecitalId('recital-1')
+            recitalId = 'recital-1'
           } catch (error) {
             console.error('Failed to create default recital:', error)
-            // Fallback to using default data without saving to Google Sheets
             setRecitals([defaultRecital])
             setCurrentRecitalId('recital-1')
+            recitalId = 'recital-1'
           }
         }
-
-        // Load dancers from Sheet1
-        const dancersData = await fetchSheetData(sheetId)
-        setDancers(dancersData)
-
-        // Load recital events for the current recital
-        if (currentRecitalId) {
-          const eventsData = await fetchRecitalEvents(sheetId, currentRecitalId)
-          setSchedules(eventsData)
-        }
-      } catch (err) {
-        console.error('Failed to load data:', err)
-        setError('Failed to load data. Please check your connection and try again.')
-      } finally {
-        setLoading(false)
       }
+      // Load dancers from Sheet1
+      const dancersData = await fetchSheetData(sheetId)
+      setDancers(dancersData)
+      // Load recital events for the current recital
+      if (recitalId) {
+        const eventsData = await fetchRecitalEvents(sheetId, recitalId)
+        console.log(`[DEBUG] App.jsx: setSchedules for ${recitalId}:`, eventsData)
+        setSchedules(eventsData)
+      }
+      setLastSync(Date.now())
+    } catch (err) {
+      console.error('Failed to load data:', err)
+      setError('Failed to load data. Please check your connection and try again.')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    loadData()
+  // Initial load
+  useEffect(() => {
+    syncAll()
   }, [])
 
   // Re-run conflict detection when dancers or schedules change
@@ -108,26 +108,22 @@ function App() {
   }, [dancers, schedules, currentRecitalId])
 
   // Reload schedules when current recital changes
+  // Auto re-fetch on recital switch
   useEffect(() => {
     if (currentRecitalId) {
-      const loadRecitalSchedules = async () => {
-        try {
-          const sheetId = import.meta.env.VITE_GOOGLE_SHEET_ID
-          const eventsData = await fetchRecitalEvents(sheetId, currentRecitalId)
-          setSchedules(eventsData)
-        } catch (error) {
-          console.error('Failed to load recital schedules:', error)
-          if (error.message.includes('400')) {
-            alert(
-              'Recital events sheet not found. It will be created when you add your first event.'
-            )
-          } else {
-            alert('Failed to load schedules for this recital. Please check your connection.')
-          }
-        }
-      }
-      loadRecitalSchedules()
+      syncAll(currentRecitalId)
     }
+  }, [currentRecitalId])
+
+  // Optional: polling every 5 minutes (300000 ms)
+  useEffect(() => {
+    if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+    const poll = () => {
+      syncAll()
+      syncTimeoutRef.current = setTimeout(poll, 300000)
+    }
+    syncTimeoutRef.current = setTimeout(poll, 300000)
+    return () => clearTimeout(syncTimeoutRef.current)
   }, [currentRecitalId])
 
   const handleAddDancer = (newDancer) => {
@@ -286,6 +282,8 @@ function App() {
           currentRecitalId={currentRecitalId}
           onRecitalChange={setCurrentRecitalId}
           onNavigateToCheckIn={() => setCurrentView('checkin')}
+          onManualRefresh={() => syncAll(currentRecitalId)}
+          lastSync={lastSync}
         />
       ) : (
         <BackstageCheckIn
