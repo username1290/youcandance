@@ -1,27 +1,26 @@
-import React from 'react';
+import React from 'react'
 
 /**
  * Loading Skeleton Component
- * 
+ *
  * A customizable skeleton loading component that simulates content loading
  * with animated placeholder elements. No external dependencies required.
  */
 
-const LoadingSkeleton = ({ 
-  type = 'rect', 
-  width = '100%', 
-  height = '20px', 
-  count = 1, 
-  gap = '10px', 
-  animation = 'pulse', 
-  className = '', 
-  style = {}, 
-  children = null 
+const LoadingSkeleton = ({
+  type = 'rect',
+  width = '100%',
+  height = '20px',
+  count = 1,
+  gap = '10px',
+  animation = 'pulse',
+  className = '',
+  style = {},
+  children = null,
 }) => {
-  
   // Generate multiple skeleton items
   const skeletonItems = Array.from({ length: count }, (_, index) => (
-    <SkeletonItem 
+    <SkeletonItem
       key={`skeleton-${type}-${index}`}
       type={type}
       width={width}
@@ -30,56 +29,55 @@ const LoadingSkeleton = ({
       className={className}
       style={style}
     />
-  ));
+  ))
 
   return (
     <div className={`loading-skeleton ${animation}`} style={{ gap }}>
       {skeletonItems}
       {children}
     </div>
-  );
-};
+  )
+}
 
 const SkeletonItem = ({ type, width, height, animation, className, style }) => {
-  
   // Apply type-specific styles
   const getTypeStyles = () => {
     switch (type) {
       case 'circle':
-        return { 
-          borderRadius: '50%', 
+        return {
+          borderRadius: '50%',
           width: height, // Make circle square
-          aspectRatio: '1/1'
-        };
+          aspectRatio: '1/1',
+        }
       case 'text':
-        return { 
-          height: '1em', 
+        return {
+          height: '1em',
           marginBottom: '0.5em',
-          borderRadius: '4px'
-        };
+          borderRadius: '4px',
+        }
       case 'button':
-        return { 
+        return {
           height: '40px',
-          borderRadius: '6px'
-        };
+          borderRadius: '6px',
+        }
       case 'card':
-        return { 
+        return {
           height: '150px',
-          borderRadius: '8px'
-        };
+          borderRadius: '8px',
+        }
       case 'avatar':
-        return { 
+        return {
           borderRadius: '50%',
           width: height,
-          aspectRatio: '1/1'
-        };
+          aspectRatio: '1/1',
+        }
       case 'rect':
       default:
-        return { borderRadius: '4px' };
+        return { borderRadius: '4px' }
     }
-  };
+  }
 
-  const typeStyles = getTypeStyles();
+  const typeStyles = getTypeStyles()
 
   return (
     <div
@@ -88,11 +86,11 @@ const SkeletonItem = ({ type, width, height, animation, className, style }) => {
         width,
         height,
         ...typeStyles,
-        ...style
+        ...style,
       }}
     />
-  );
-};
+  )
+}
 
 /**
  * Predefined Skeleton Layouts
@@ -102,30 +100,30 @@ const SkeletonItem = ({ type, width, height, animation, className, style }) => {
 export const DashboardSkeleton = () => (
   <div className="dashboard-skeleton">
     <LoadingSkeleton type="text" width="30%" height="32px" count={1} gap="20px" />
-    
+
     <div className="skeleton-grid">
       <div className="skeleton-card">
         <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
         <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
         <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
       </div>
-      
+
       <div className="skeleton-card">
         <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
         <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
         <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
       </div>
-      
+
       <div className="skeleton-card">
         <LoadingSkeleton type="text" width="60%" height="24px" count={1} gap="15px" />
         <LoadingSkeleton type="rect" width="100%" height="100px" count={1} gap="15px" />
         <LoadingSkeleton type="text" width="40%" height="20px" count={1} gap="10px" />
       </div>
     </div>
-    
+
     <LoadingSkeleton type="rect" width="100%" height="200px" count={1} gap="20px" />
   </div>
-);
+)
 
 // Table Skeleton
 export const TableSkeleton = ({ rows = 5, columns = 4 }) => (
@@ -133,34 +131,34 @@ export const TableSkeleton = ({ rows = 5, columns = 4 }) => (
     {/* Header */}
     <div className="skeleton-table-header">
       {Array.from({ length: columns }, (_, index) => (
-        <LoadingSkeleton 
+        <LoadingSkeleton
           key={`header-${index}`}
-          type="text" 
-          width={`${100 / columns}%`} 
-          height="24px" 
-          count={1} 
+          type="text"
+          width={`${100 / columns}%`}
+          height="24px"
+          count={1}
           gap="0"
         />
       ))}
     </div>
-    
+
     {/* Rows */}
     {Array.from({ length: rows }, (_, rowIndex) => (
       <div key={`row-${rowIndex}`} className="skeleton-table-row">
         {Array.from({ length: columns }, (_, colIndex) => (
-          <LoadingSkeleton 
+          <LoadingSkeleton
             key={`cell-${rowIndex}-${colIndex}`}
-            type="text" 
-            width={`${100 / columns}%`} 
-            height="20px" 
-            count={1} 
+            type="text"
+            width={`${100 / columns}%`}
+            height="20px"
+            count={1}
             gap="0"
           />
         ))}
       </div>
     ))}
   </div>
-);
+)
 
 // Card Skeleton
 export const CardSkeleton = () => (
@@ -170,7 +168,7 @@ export const CardSkeleton = () => (
     <LoadingSkeleton type="text" width="60%" height="20px" count={1} gap="8px" />
     <LoadingSkeleton type="text" width="90%" height="16px" count={2} gap="8px" />
   </div>
-);
+)
 
 // List Skeleton
 export const ListSkeleton = ({ items = 4 }) => (
@@ -185,20 +183,20 @@ export const ListSkeleton = ({ items = 4 }) => (
       </div>
     ))}
   </div>
-);
+)
 
 // Form Skeleton
 export const FormSkeleton = () => (
   <div className="form-skeleton">
     <LoadingSkeleton type="text" width="30%" height="24px" count={1} gap="20px" />
-    
+
     <LoadingSkeleton type="rect" width="100%" height="40px" count={1} gap="15px" />
     <LoadingSkeleton type="rect" width="100%" height="40px" count={1} gap="15px" />
     <LoadingSkeleton type="rect" width="50%" height="40px" count={1} gap="15px" />
-    
+
     <LoadingSkeleton type="button" width="20%" height="40px" count={1} gap="20px" />
   </div>
-);
+)
 
 // Profile Skeleton
 export const ProfileSkeleton = () => (
@@ -211,14 +209,14 @@ export const ProfileSkeleton = () => (
         <LoadingSkeleton type="button" width="120px" height="36px" count={1} gap="15px" />
       </div>
     </div>
-    
+
     <LoadingSkeleton type="rect" width="100%" height="1px" count={1} gap="20px" />
-    
+
     <div className="profile-stats">
       <LoadingSkeleton type="text" width="80px" height="20px" count={3} gap="20px" />
     </div>
   </div>
-);
+)
 
 // Full Page Skeleton
 export const FullPageSkeleton = () => (
@@ -227,20 +225,20 @@ export const FullPageSkeleton = () => (
       <LoadingSkeleton type="text" width="200px" height="36px" count={1} gap="20px" />
       <LoadingSkeleton type="button" width="120px" height="40px" count={1} gap="0" />
     </div>
-    
+
     <div className="page-content">
       <DashboardSkeleton />
     </div>
-    
+
     <div className="page-footer">
       <LoadingSkeleton type="text" width="150px" height="20px" count={1} gap="0" />
     </div>
   </div>
-);
+)
 
 // Add CSS for skeleton animations
-export const addSkeletonCSS = () => {
-  const style = document.createElement('style');
+const addSkeletonCSS = () => {
+  const style = document.createElement('style')
   style.textContent = `
     .loading-skeleton {
       display: flex;
@@ -383,14 +381,14 @@ export const addSkeletonCSS = () => {
     .theater-mode .skeleton-list-item {
       border-bottom-color: #666;
     }
-  `;
-  
-  document.head.appendChild(style);
-};
+  `
+
+  document.head.appendChild(style)
+}
 
 // Auto-add CSS when component mounts
 if (typeof window !== 'undefined') {
-  addSkeletonCSS();
+  addSkeletonCSS()
 }
 
-export default LoadingSkeleton;
+export default LoadingSkeleton

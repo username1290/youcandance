@@ -22,6 +22,25 @@ const RecitalPlannerDashboard = ({
   lastSync,
 }) => {
   const [newDancer, setNewDancer] = useState({ name: '', role: '' })
+  const [timeAgo, setTimeAgo] = useState('')
+
+  // Update time ago string periodically to avoid pure render issues with Date.now()
+  React.useEffect(() => {
+    if (!lastSync) {
+      setTimeAgo('never')
+      return
+    }
+
+    const updateTime = () => {
+      const diff = Date.now() - lastSync
+      const minutes = Math.floor(diff / 60000)
+      setTimeAgo(`${minutes} minute${minutes === 1 ? '' : 's'} ago`)
+    }
+
+    updateTime()
+    const interval = setInterval(updateTime, 60000)
+    return () => clearInterval(interval)
+  }, [lastSync])
 
   // Use prop if available, otherwise default to 'recital-1' (for backward compatibility or if not passed)
   const activeRecitalId = currentRecitalId || 'recital-1'
@@ -86,7 +105,10 @@ const RecitalPlannerDashboard = ({
             </button>
           ))}
         </div>
-        <div className="dashboard-actions" style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div
+          className="dashboard-actions"
+          style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}
+        >
           <button
             className="checkin-nav-btn"
             onClick={onNavigateToCheckIn}
@@ -131,7 +153,7 @@ const RecitalPlannerDashboard = ({
             🔄 Refresh
           </button>
           <span style={{ fontSize: '13px', color: '#666', marginLeft: '8px' }}>
-            Synced {lastSync ? `${Math.floor((Date.now() - lastSync) / 60000)} minute${Math.floor((Date.now() - lastSync) / 60000) === 1 ? '' : 's'} ago` : 'never'}
+            Synced {timeAgo}
           </span>
         </div>
         <section>

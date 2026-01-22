@@ -11,26 +11,26 @@ let tokenClient = null
 let accessToken = null
 
 // --- Persistence Helpers ---
-const STORAGE_KEY_TOKEN = 'google_access_token';
-const STORAGE_KEY_EXPIRY = 'google_token_expiry';
+const STORAGE_KEY_TOKEN = 'google_access_token'
+const STORAGE_KEY_EXPIRY = 'google_token_expiry'
 
 const saveToken = (token, expiresInSeconds) => {
-  const expiryTime = Date.now() + (expiresInSeconds * 1000);
-  sessionStorage.setItem(STORAGE_KEY_TOKEN, token);
-  sessionStorage.setItem(STORAGE_KEY_EXPIRY, expiryTime.toString());
-  accessToken = token;
-};
+  const expiryTime = Date.now() + expiresInSeconds * 1000
+  sessionStorage.setItem(STORAGE_KEY_TOKEN, token)
+  sessionStorage.setItem(STORAGE_KEY_EXPIRY, expiryTime.toString())
+  accessToken = token
+}
 
 const getStoredToken = () => {
-  const token = sessionStorage.getItem(STORAGE_KEY_TOKEN);
-  const expiry = sessionStorage.getItem(STORAGE_KEY_EXPIRY);
-  
+  const token = sessionStorage.getItem(STORAGE_KEY_TOKEN)
+  const expiry = sessionStorage.getItem(STORAGE_KEY_EXPIRY)
+
   if (token && expiry && Date.now() < parseInt(expiry)) {
-    console.log('Using valid stored access token');
-    return token;
+    console.log('Using valid stored access token')
+    return token
   }
-  return null;
-};
+  return null
+}
 // ---------------------------
 
 // Load the Google API client library
@@ -84,25 +84,26 @@ const loadGis = () => {
 const initTokenClient = () => {
   tokenClient = window.google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
+    scope:
+      'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/userinfo.email',
     callback: (response) => {
       if (response.error) {
         console.error('Token error:', response)
         return
       }
       // Save token with expiry (using default 3599s if not provided, though it usually is)
-      const expiresIn = response.expires_in || 3599; 
-      saveToken(response.access_token, expiresIn);
+      const expiresIn = response.expires_in || 3599
+      saveToken(response.access_token, expiresIn)
       console.log('Access token obtained and stored')
     },
   })
-  
+
   // Attempt to restore token on init
-  const stored = getStoredToken();
+  const stored = getStoredToken()
   if (stored) {
-    accessToken = stored;
+    accessToken = stored
   }
-  
+
   console.log('GIS initialized')
 }
 
@@ -125,13 +126,13 @@ export const authenticate = () => {
       resolve(accessToken)
       return
     }
-    
+
     // 2. Check storage
-    const stored = getStoredToken();
+    const stored = getStoredToken()
     if (stored) {
-      accessToken = stored;
-      resolve(stored);
-      return;
+      accessToken = stored
+      resolve(stored)
+      return
     }
 
     // 3. Request new token
@@ -145,8 +146,8 @@ export const authenticate = () => {
         reject(response)
         return
       }
-      const expiresIn = response.expires_in || 3599;
-      saveToken(response.access_token, expiresIn);
+      const expiresIn = response.expires_in || 3599
+      saveToken(response.access_token, expiresIn)
       resolve(response.access_token)
     }
     tokenClient.requestAccessToken({ prompt: '' })
@@ -157,17 +158,17 @@ export const getUserProfile = async () => {
   try {
     await init()
     const token = await authenticate()
-    
+
     const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch user profile')
     }
-    
+
     return await response.json()
   } catch (error) {
     console.error('Error fetching user profile:', error)
@@ -180,20 +181,20 @@ export const signOut = () => {
     window.google.accounts.oauth2.revoke(accessToken, () => {
       console.log('Access token revoked')
       accessToken = null
-      sessionStorage.removeItem(STORAGE_KEY_TOKEN);
-      sessionStorage.removeItem(STORAGE_KEY_EXPIRY);
+      sessionStorage.removeItem(STORAGE_KEY_TOKEN)
+      sessionStorage.removeItem(STORAGE_KEY_EXPIRY)
       window.location.reload()
     })
   } else {
     accessToken = null
-    sessionStorage.removeItem(STORAGE_KEY_TOKEN);
-    sessionStorage.removeItem(STORAGE_KEY_EXPIRY);
+    sessionStorage.removeItem(STORAGE_KEY_TOKEN)
+    sessionStorage.removeItem(STORAGE_KEY_EXPIRY)
     window.location.reload()
   }
 }
 
 export const fetchSheetData = async (sheetId) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const response = await fetch(
@@ -210,8 +211,8 @@ export const fetchSheetData = async (sheetId) => {
     const dancers = rows.map((row, index) => {
       // Step 1: Support robust UUIDs (Strings) instead of fragile Integers
       const rawId = row[0]
-      const id = (rawId && rawId.length > 0) ? rawId : `dancer-${index}-${Date.now()}`
-      
+      const id = rawId && rawId.length > 0 ? rawId : `dancer-${index}-${Date.now()}`
+
       return {
         id,
         name: row[1] || '',
@@ -268,7 +269,7 @@ export const fetchSheetData = async (sheetId) => {
 }
 
 export const updateDancerStatus = async (rowIndex, status, sheetId) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
@@ -330,7 +331,7 @@ export const updateDancerStatus = async (rowIndex, status, sheetId) => {
 }
 
 export const updateDancerMeasurements = async (rowIndex, measurements, sheetId) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
@@ -411,7 +412,7 @@ export const saveSchedule = async (sheetId, schedule) => {
 const RECITAL_RANGE = 'Sheet2!A:E'
 
 export const saveRecitalEvent = async (sheetId, recitalEvent, recitalId = 'recital-1') => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
@@ -476,7 +477,7 @@ export const updateRecitalEvent = async (
   updatedEvent,
   recitalId = 'recital-1'
 ) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
@@ -532,7 +533,7 @@ export const updateRecitalEvent = async (
 }
 
 export const deleteRecitalEvent = async (sheetId, rowIndex, recitalId = 'recital-1') => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
@@ -566,7 +567,7 @@ export const deleteRecitalEvent = async (sheetId, rowIndex, recitalId = 'recital
 
 // Multi-Recital Management Functions
 export const fetchAllRecitals = async (sheetId) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${RECITAL_METADATA_RANGE}?key=${API_KEY}`
@@ -608,33 +609,33 @@ export const fetchAllRecitals = async (sheetId) => {
   }
 }
 
-
 export const fetchRecitalEvents = async (sheetId, recitalId = 'recital-1') => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   // Map recitalId to sheet number (Sheet2 = recital-1, Sheet3 = recital-2, etc.)
   const recitalNumber = recitalId.replace('recital-', '')
   let sheetNumber = parseInt(recitalNumber) + 1 // Sheet2 for recital-1, Sheet3 for recital-2
-  
+
   // Skip Sheet4 (Metadata) if calculated
   if (sheetNumber === 4) sheetNumber = 5
 
   let range = `Sheet${sheetNumber}!A:E`
 
   try {
-
     let response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${API_KEY}`
     )
 
     // Retry logic: If default sheet name fails, try to resolve via metadata
     if (response.status === 400) {
-      console.warn(`Default sheet name Sheet${sheetNumber} failed. Trying to resolve via metadata...`)
+      console.warn(
+        `Default sheet name Sheet${sheetNumber} failed. Trying to resolve via metadata...`
+      )
       try {
         const metaResponse = await fetch(
           `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?key=${API_KEY}`
         )
         const metaData = await metaResponse.json()
-        
+
         // Try to find sheet by index
         // Default assumption:
         // Index 0: Dancers (Sheet1)
@@ -642,40 +643,40 @@ export const fetchRecitalEvents = async (sheetId, recitalId = 'recital-1') => {
         // Index 2: Recital 2 (Sheet3)
         // Index 3: Metadata (Sheet4)
         // ...
-        
-        const targetRecitalIndex = parseInt(recitalNumber) // 1 for recital-1, 2 for recital-2
-        
+
+        // const targetRecitalIndex = parseInt(recitalNumber) // 1 for recital-1, 2 for recital-2
+
         // Adjust for Metadata sheet being at index 3 (Sheet4)
         // If we are looking for recital-3 (index 3 logically), it might be pushed to index 4 physically?
         // This is fragile. Better to look for "SheetN" unless renamed.
-        
+
         // Search by title match primarily
         const targetTitle = `Sheet${sheetNumber}`
-        const sheetByName = metaData.sheets.find(s => s.properties.title === targetTitle)
-        
+        const sheetByName = metaData.sheets.find((s) => s.properties.title === targetTitle)
+
         let resolvedTitle = null
         if (sheetByName) {
-           resolvedTitle = sheetByName.properties.title
+          resolvedTitle = sheetByName.properties.title
         } else {
-           // Fallback to index based on recital number
-           // +1 offset because Sheet1 is index 0
-           // recital-1 -> index 1
-           // recital-2 -> index 2
-           // recital-3 -> index 4 (skip index 3/Sheet4) ??? 
-           
-           let targetIndex = parseInt(recitalNumber)
-           // If we are past the metadata sheet (Sheet4 / index 3), shift +1?
-           if (targetIndex >= 3) targetIndex += 1
-           
-           if (metaData.sheets && metaData.sheets[targetIndex]) {
-              resolvedTitle = metaData.sheets[targetIndex].properties.title
-           }
+          // Fallback to index based on recital number
+          // +1 offset because Sheet1 is index 0
+          // recital-1 -> index 1
+          // recital-2 -> index 2
+          // recital-3 -> index 4 (skip index 3/Sheet4) ???
+
+          let targetIndex = parseInt(recitalNumber)
+          // If we are past the metadata sheet (Sheet4 / index 3), shift +1?
+          if (targetIndex >= 3) targetIndex += 1
+
+          if (metaData.sheets && metaData.sheets[targetIndex]) {
+            resolvedTitle = metaData.sheets[targetIndex].properties.title
+          }
         }
 
         if (resolvedTitle) {
           console.log(`Resolved ${recitalId} to sheet "${resolvedTitle}"`)
           range = `'${resolvedTitle}'!A:E`
-          
+
           response = await fetch(
             `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(range)}?key=${API_KEY}`
           )
@@ -687,9 +688,7 @@ export const fetchRecitalEvents = async (sheetId, recitalId = 'recital-1') => {
 
     // If sheet still doesn't exist (400 error), return empty array
     if (response.status === 400) {
-      console.warn(
-        `Sheet for ${recitalId} doesn't exist yet. Returning empty events.`
-      )
+      console.warn(`Sheet for ${recitalId} doesn't exist yet. Returning empty events.`)
       return []
     }
 
@@ -716,8 +715,14 @@ export const fetchRecitalEvents = async (sheetId, recitalId = 'recital-1') => {
       rowIndex: index + 2,
       _raw: row,
     }))
-    console.log(`[DEBUG] fetchRecitalEvents: Recital ${recitalId} (Sheet${sheetNumber}) raw rows:`, data.values)
-    console.log(`[DEBUG] fetchRecitalEvents: Recital ${recitalId} (Sheet${sheetNumber}) parsed events:`, events)
+    console.log(
+      `[DEBUG] fetchRecitalEvents: Recital ${recitalId} (Sheet${sheetNumber}) raw rows:`,
+      data.values
+    )
+    console.log(
+      `[DEBUG] fetchRecitalEvents: Recital ${recitalId} (Sheet${sheetNumber}) parsed events:`,
+      events
+    )
     return events
   } catch (error) {
     console.error(`[DEBUG] Error fetching events for ${recitalId}:`, error)
@@ -726,7 +731,7 @@ export const fetchRecitalEvents = async (sheetId, recitalId = 'recital-1') => {
 }
 
 export const createRecital = async (sheetId, recitalData) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
@@ -769,14 +774,14 @@ export const createRecital = async (sheetId, recitalData) => {
 
 // Helper function to create a new sheet for recital events
 export const createRecitalEventsSheet = async (sheetId, recitalId) => {
-  if (!sheetId) throw new Error("No Spreadsheet ID provided");
+  if (!sheetId) throw new Error('No Spreadsheet ID provided')
   try {
     await init()
     const token = await authenticate()
 
     const recitalNumber = recitalId.replace('recital-', '')
     let sheetNumber = parseInt(recitalNumber) + 1
-    
+
     // Skip Sheet4 (Metadata)
     if (sheetNumber === 4) sheetNumber = 5
 
