@@ -117,7 +117,7 @@ function App() {
           recitalId = firstActive.id
         } else {
           // If no recitals exist, create a default one
-          console.warn('No recitals found in Sheet4. Creating default recital...')
+          console.warn('No recitals found in Sheet3. Creating default recital...')
           const defaultRecital = {
             id: 'recital-1',
             name: 'Spring Showcase 2024',
@@ -390,6 +390,27 @@ function App() {
         </div>
         
         <div className="dashboard-wrapper px-4">
+            {recitalConfigs.length === 0 && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <span className="text-yellow-400">⚠️</span>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-700">
+                      No recital sheets configured. Please go to{' '}
+                      <button 
+                        onClick={() => setCurrentView('settings')}
+                        className="font-medium underline hover:text-yellow-600"
+                      >
+                        Settings
+                      </button>
+                      {' '}to add a Google Sheet.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex justify-end mb-4">
                  <button onClick={() => setShowQRGenerator(true)} className="qr-generate-btn mr-4">
                 Generate QR Codes

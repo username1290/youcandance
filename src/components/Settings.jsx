@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 
 export default function Settings({ onConfigsChange, initialConfigs }) {
-  const [configs, setConfigs] = useState(initialConfigs || []);
+  // Use props directly instead of local state to ensure source of truth
+  const configs = initialConfigs || []; 
   const [newSheetId, setNewSheetId] = useState('');
   const [newName, setNewName] = useState('');
 
   const handleAdd = () => {
     if (!newSheetId || !newName) return;
     const updated = [...configs, { name: newName, id: newSheetId }];
-    setConfigs(updated);
+    // No local setConfigs, just notify parent
     onConfigsChange(updated);
     setNewSheetId('');
     setNewName('');
@@ -16,7 +17,6 @@ export default function Settings({ onConfigsChange, initialConfigs }) {
 
   const handleRemove = (index) => {
     const updated = configs.filter((_, i) => i !== index);
-    setConfigs(updated);
     onConfigsChange(updated);
   };
 

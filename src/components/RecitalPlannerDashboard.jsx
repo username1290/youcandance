@@ -86,25 +86,14 @@ const RecitalPlannerDashboard = ({
     recitals.length > 0
       ? recitals
       : [
-          { id: 'recital-1', name: 'Recital 1' },
-          { id: 'recital-2', name: 'Recital 2' },
+          { id: 'recital-1', name: 'Default Recital' },
         ]
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="recital-planner-dashboard">
         <h2>Recital Planner Dashboard</h2>
-        <div className="recital-tabs-global">
-          {displayRecitals.map((recital) => (
-            <button
-              key={recital.id}
-              className={`recital-tab-global ${activeRecitalId === recital.id ? 'active' : ''}`}
-              onClick={() => (onRecitalChange ? onRecitalChange(recital.id) : null)}
-            >
-              {recital.name} <span className="count-badge">{getDancerCount(recital.id)}</span>
-            </button>
-          ))}
-        </div>
+        {/* Recital selection tabs removed for single-recital-per-sheet mode */}
         <div
           className="dashboard-actions"
           style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}
