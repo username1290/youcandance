@@ -32,16 +32,20 @@ const DraggableDancer = ({ dancer, isAssigned, conflicts, onConflictClick }) => 
   return (
     <div
       ref={drag}
-      className={`draggable-dancer bg-white p-3 mb-2 rounded-lg shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-all flex justify-between items-center ${isDragging ? 'opacity-50' : 'opacity-100'} ${isAssigned ? 'bg-green-50 border-green-200' : ''} ${hasConflicts ? 'bg-red-50 border-red-200' : ''}`}
+      className={`draggable-dancer bg-white p-2 mb-1 rounded shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-all flex justify-between items-center ${isDragging ? 'opacity-50' : 'opacity-100'} ${isAssigned ? 'bg-green-50 border-green-200' : ''} ${hasConflicts ? 'bg-red-50 border-red-200' : ''}`}
       onClick={handleClick}
     >
-      <div className="dancer-info flex flex-col">
-        <span className="dancer-name font-medium text-gray-800">{dancer.name}</span>
-        {dancer.role && <span className="dancer-role text-xs text-gray-500">{dancer.role}</span>}
+      <div className="dancer-info flex flex-col overflow-hidden">
+        <span className="dancer-name text-sm font-medium text-gray-800 truncate">
+          {dancer.name}
+        </span>
+        {dancer.role && (
+          <span className="dancer-role text-[10px] text-gray-500 truncate">{dancer.role}</span>
+        )}
       </div>
       {hasConflicts && (
         <span
-          className="conflict-badge bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold"
+          className="conflict-badge bg-red-100 text-red-600 text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-2 shrink-0"
           title={`This dancer has ${conflictCount} scheduling conflict${conflictCount > 1 ? 's' : ''}`}
         >
           ⚠️ {conflictCount}
@@ -79,41 +83,106 @@ const DroppableScheduleSlot = ({
   return (
     <div
       ref={drop}
-      className={`schedule-slot bg-white p-4 rounded-lg border-2 transition-colors min-h-[150px] flex flex-col ${isOver ? 'border-primary bg-green-50' : 'border-gray-200'} ${canDrop ? 'border-dashed' : ''}`}
+      className={`schedule-slot bg-white p-2 rounded-lg border-2 transition-colors min-h-[100px] flex flex-col ${isOver ? 'border-primary bg-green-50' : 'border-gray-200'} ${canDrop ? 'border-dashed' : ''}`}
     >
-      <div className="schedule-header flex justify-between items-start mb-3 pb-2 border-b border-gray-100">
-        <div>
-          <h4 className="font-bold text-gray-800 m-0">{schedule.title}</h4>
-          <span className="text-xs text-gray-500">{schedule.date} </span>
+      <div className="schedule-header flex justify-between items-center mb-2 pb-1 border-b border-gray-100">
+        <div className="overflow-hidden mr-2">
+          <h4 className="font-bold text-gray-800 m-0 text-sm truncate" title={schedule.title}>
+            {schedule.title}
+          </h4>
+          <span className="text-[10px] text-gray-500 block truncate">{schedule.date} </span>
         </div>
         <input
           type="time"
           value={schedule.time || ''}
           onChange={handleTimeChange}
-          className="time-input text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-primary"
+          className="time-input text-xs border border-gray-300 rounded px-1 py-0.5 focus:outline-none focus:border-primary w-26 shrink-0"
         />
       </div>
-      <div className="assigned-dancers flex-1 flex flex-col gap-2">
-        {assignedDancers.length > 0 ? (
-          assignedDancers.map((dancer) => (
-            <div
-              key={`assigned-${dancer.id}`}
-              className="assigned-dancer bg-gray-50 p-2 rounded border border-gray-200 text-sm flex justify-between items-center group"
-            >
-              <span className="font-medium text-gray-700">{dancer.name}</span>
-              <button
-                onClick={() => onRemoveDancer(schedule.id, dancer.id)}
-                className="remove-btn text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                ×
-              </button>
-            </div>
-          ))
-        ) : (
-          <div className="empty-slot text-gray-400 text-sm italic text-center py-4 border-2 border-dashed border-gray-100 rounded">
-            Drop dancers here
-          </div>
-        )}
+      <div className="assigned-dancers flex-1 flex flex-col gap-1 content-start">
+        {(() => {
+          // Separate Leads and Ensemble
+          const assignedDancerObjs = assignedDancers.map((d) => d)
+          const leads = assignedDancerObjs.filter((d) =>
+            Boolean(d.recitalSpecificRole && d.recitalSpecificRole.trim().length > 0)
+          )
+          const ensemble = assignedDancerObjs.filter(
+            (d) => !d.recitalSpecificRole || d.recitalSpecificRole.trim().length === 0
+          )
+
+          if (assignedDancerObjs.length === 0) {
+            return (
+              <div className="empty-slot text-gray-400 text-xs italic text-center py-2 border-2 border-dashed border-gray-100 rounded">
+                Drop dancers here
+              </div>
+            )
+          }
+
+          return (
+            <>
+              {/* Leads Section */}
+              {leads.length > 0 && (
+                <div className="mb-1">
+                  <div className="text-[9px] font-bold text-indigo-700 uppercase tracking-wider mb-0.5 ml-0.5">
+                    Leads
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {leads.map((dancer) => (
+                      <div
+                        key={`assigned-${dancer.id}`}
+                        className="assigned-dancer bg-indigo-50 p-1 px-2 rounded border border-indigo-100 text-xs flex justify-between items-center group max-w-full"
+                      >
+                        <div className="flex flex-col overflow-hidden mr-1">
+                          <span className="font-medium text-indigo-900 truncate">
+                            {dancer.name}
+                          </span>
+                          <span className="text-[9px] text-indigo-500 truncate">
+                            {dancer.recitalSpecificRole}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => onRemoveDancer(schedule.id, dancer.id)}
+                          className="remove-btn text-indigo-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 leading-none"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ensemble Section */}
+              {ensemble.length > 0 && (
+                <div>
+                  {leads.length > 0 && (
+                    <div className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 ml-0.5">
+                      Ensemble
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-1">
+                    {ensemble.map((dancer) => (
+                      <div
+                        key={`assigned-${dancer.id}`}
+                        className="assigned-dancer bg-gray-50 p-1 px-2 rounded border border-gray-200 text-xs flex justify-between items-center group max-w-full"
+                      >
+                        <span className="font-medium text-gray-700 truncate mr-1">
+                          {dancer.name}
+                        </span>
+                        <button
+                          onClick={() => onRemoveDancer(schedule.id, dancer.id)}
+                          className="remove-btn text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 leading-none"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )
+        })()}
       </div>
     </div>
   )
@@ -428,56 +497,56 @@ const DragDropScheduleManager = ({
   }
 
   return (
-    <div className="drag-drop-schedule-manager bg-background rounded-lg shadow-sm p-6 mb-6 border border-gray-200">
-      <h3 className="text-xl font-bold text-text mb-6 flex items-center gap-2">
+    <div className="drag-drop-schedule-manager bg-background rounded-lg shadow-sm p-4 mb-6 border border-gray-200">
+      <h3 className="text-lg font-bold text-text mb-4 flex items-center gap-2">
         📅 Drag & Drop Recital Scheduler
       </h3>
 
-      <div className="schedule-controls mb-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
-        <form onSubmit={handleSubmit} className="add-schedule-form flex gap-4 flex-wrap items-end">
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold text-gray-500 mb-1">Event Title</label>
+      <div className="schedule-controls mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+        <form onSubmit={handleSubmit} className="add-schedule-form flex gap-3 flex-wrap items-end">
+          <div className="flex-1 min-w-[150px]">
+            <label className="block text-[10px] font-bold text-gray-500 mb-0.5">Event Title</label>
             <input
               type="text"
               placeholder="e.g. Act 1 Scene 1"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary bg-white"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-primary bg-white"
             />
           </div>
-          <div className="w-40">
-            <label className="block text-xs font-bold text-gray-500 mb-1">Date</label>
+          <div className="w-32">
+            <label className="block text-[10px] font-bold text-gray-500 mb-0.5">Date</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary bg-white"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-primary bg-white"
             />
           </div>
-          <div className="w-32">
-            <label className="block text-xs font-bold text-gray-500 mb-1">Time</label>
+          <div className="w-24">
+            <label className="block text-[10px] font-bold text-gray-500 mb-0.5">Time</label>
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary bg-white"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-primary bg-white"
             />
           </div>
           <button
             type="submit"
-            className="bg-primary hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold h-[42px] transition-colors"
+            className="bg-primary hover:bg-green-600 text-white px-4 py-1.5 rounded font-semibold text-sm h-[34px] transition-colors"
           >
             Add Event
           </button>
         </form>
       </div>
 
-      <div className="schedule-container grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="dancers-panel bg-gray-50 p-4 rounded-lg border border-gray-200 h-[600px] flex flex-col">
-          <div className="dancers-header mb-4">
-            <h4 className="font-bold text-gray-700 mb-3">👥 Available Dancers</h4>
+      <div className="schedule-container grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="dancers-panel bg-gray-50 p-3 rounded-lg border border-gray-200 h-[600px] flex flex-col">
+          <div className="dancers-header mb-3">
+            <h4 className="font-bold text-gray-700 mb-2 text-sm">👥 Available Dancers</h4>
             <div className="dancers-controls flex flex-col gap-2">
               <div className="search-filter">
                 <input
@@ -485,7 +554,7 @@ const DragDropScheduleManager = ({
                   placeholder="🔍 Search..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="dancer-search w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-primary"
+                  className="dancer-search w-full px-2 py-1.5 border border-gray-300 rounded text-xs focus:outline-none focus:border-primary"
                 />
               </div>
               <div className="flex gap-2">
@@ -493,7 +562,7 @@ const DragDropScheduleManager = ({
                   <select
                     value={filterRole}
                     onChange={(e) => setFilterRole(e.target.value)}
-                    className="role-filter w-full px-2 py-2 border border-gray-300 rounded text-sm bg-white focus:outline-none focus:border-primary"
+                    className="role-filter w-full px-1.5 py-1.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:border-primary"
                   >
                     {uniqueRoles.map((role) => (
                       <option key={role} value={role}>
@@ -506,7 +575,7 @@ const DragDropScheduleManager = ({
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="sort-select w-full px-2 py-2 border border-gray-300 rounded text-sm bg-white focus:outline-none focus:border-primary"
+                    className="sort-select w-full px-1.5 py-1.5 border border-gray-300 rounded text-xs bg-white focus:outline-none focus:border-primary"
                   >
                     <option value="name">Sort: Name</option>
                     <option value="class">Sort: Class</option>
@@ -515,12 +584,12 @@ const DragDropScheduleManager = ({
                 </div>
               </div>
             </div>
-            <div className="dancer-stats text-xs text-gray-500 mt-2 flex justify-between items-center">
+            <div className="dancer-stats text-[10px] text-gray-500 mt-2 flex justify-between items-center">
               <span>
                 {filteredAndSortedDancers.length} / {dancers.length}
               </span>
               {searchTerm && (
-                <span className="search-badge bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                <span className="search-badge bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded-full">
                   Filtered
                 </span>
               )}
@@ -559,12 +628,12 @@ const DragDropScheduleManager = ({
           </div>
         </div>
 
-        <div className="schedule-timeline col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-200 min-h-[600px] flex flex-col">
-          <h4 className="font-bold text-gray-700 mb-4">Recital Timeline</h4>
-          <div className="timeline-content overflow-y-auto flex-1 pr-2 space-y-4">
+        <div className="schedule-timeline col-span-2 bg-gray-50 p-3 rounded-lg border border-gray-200 min-h-[600px] flex flex-col">
+          <h4 className="font-bold text-gray-700 mb-3 text-sm">Recital Timeline</h4>
+          <div className="timeline-content overflow-y-auto flex-1 pr-2 space-y-3">
             {localSchedules.length === 0 ? (
               <div className="empty-timeline text-center py-12 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                <p>No events scheduled yet. Add an event to get started!</p>
+                <p className="text-sm">No events scheduled yet. Add an event to get started!</p>
               </div>
             ) : (
               localSchedules.map((schedule, index) => (
